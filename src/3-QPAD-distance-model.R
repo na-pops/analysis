@@ -76,7 +76,6 @@ covars <- covars[-c(to_remove), ]
 
 # Build matrices by species :D
 species <- sort(as.character(unique(counts$Species)))
-species <- species[1:20]
 
 for (s in species)
 {
@@ -104,6 +103,7 @@ for (s in species)
 
 # Function to do multiple cmulti bois
 multi_multi <- function(x) {
+  
   require(detect)
   m1 = cmulti(x$Y | x$D ~ 1, type="dis")
   m2 = cmulti(x$Y | x$D ~ x$C$roaddist, type="dis")
@@ -113,10 +113,22 @@ multi_multi <- function(x) {
   return(list(m1,m2,m3,m4,m5))
 }
 
+graceful_mm <- function(x)
+{
+  to_return <- NA
+  tryCatch({to_return <- multi_multi(x);}, 
+           error = function(e) {to_return <- NA});
+  
+  return(to_return)
+}
+
 cluster <- makeCluster(detectCores() - 1)
 clusterEvalQ(cluster, library(detect))
-clusterExport(cluster, "input_list"); clusterExport(cluster, "multi_multi")
-output_list <- parLapply(cl = cluster,
-                         X = input_list,
-                         fun = multi_multi)
+clusterExport(cluster, "input_list"); clusterExport(cluster, "multi_multi"); clusterExport(cluster, "graceful_mm")
+distance_output_list <- parLapply(cl = cluster,
+                                  X = input_list,
+                                  fun = graceful_mm)
 stopCluster(cluster)
+
+save(distance_output_list, file = "data/distance_output_list.rda")
+
