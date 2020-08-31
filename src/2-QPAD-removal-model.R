@@ -109,7 +109,9 @@ multi_multi <- function(x) {
 cluster <- makeCluster(detectCores() - 1)
 clusterEvalQ(cluster, library(detect))
 clusterExport(cluster, "input_list"); clusterExport(cluster, "multi_multi")
-output_list <- parLapply(cl = cluster,
-                         X = input_list,
-                         fun = multi_multi)
+removal_output_list <- parLapply(cl = cluster,
+                                 X = input_list,
+                                 fun = multi_multi)
 stopCluster(cluster)
+
+save(removal_output_list, file = "data/removal_output_list.rda")
