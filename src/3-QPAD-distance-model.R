@@ -137,7 +137,8 @@ save(distance_output_list, file = "data/distance_output_list.rda")
 # create function to sapply BIC to a list
 bic_multi <- function(x)
 {
-  sapply(x, FUN = BIC)
+  tryCatch(sapply(x, FUN = BIC),
+           error = function(e) NA)
 }
 
 #estimate BIC values for all models across all species
@@ -149,8 +150,16 @@ dist_coef <- data.frame(Species=species, model=NA, n=NA, sraint=NA,sraroaddist=N
 
 #Extracts model coefficients based on top model in BIC tables and assigns them to the correct column
 for (i in species) {
+  if (is.na(bic_list[[i]]))
+  {
+    next
+  }
   model = which(bic_list[[i]]==min(bic_list[[i]])) #determine which model has lowest BIC
   coef = coef(removal_output_list[[i]][[model]]) #extract coefficients from best model
+  if (is.null(coef))
+  {
+    next
+  }
   dist_coef[which(dist_coef$Species==i),"model"]=model
   dist_coef[which(dist_coef$Species==i),"n"]=nrow(get(paste0("Y_",i)))
   if (model==1) {
