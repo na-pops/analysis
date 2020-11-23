@@ -3,7 +3,7 @@
 # NA-POPS: analysis
 # 2-QPAD-removal-model.R
 # Created August 2020
-# Last Updated August 2020
+# Last Updated October 2020
 
 ####### Import Libraries and External Files #######
 
@@ -14,14 +14,14 @@ library(parallel)
 ####### Read Data #################################
 
 load(file = here::here("data/time_count_matrix.rda"))
-load(file = here::here("data/covariates.rda"))
+load(file = here::here("data/temporal_covariates.rda"))
 load(file = here::here("data/time_design.rda"))
 
 ####### Data Wrangling ############################
 
-# Drop most of the landcover covariates for now
-covariates_reduced <- covariates[, c("Sample_ID", "roaddist", "ForestOnly_5x5")]
-covariates_reduced$ForestOnly_5x5 <- covariates_reduced$ForestOnly_5x5 / 25
+# Drop rows that have NA in JD or TSSR
+covariates_reduced <- temporal_covariates[which(!is.na(temporal_covariates$JD)), ]
+covariates_reduced <- covariates_reduced[which(!is.na(covariates_reduced$TSSR)), ]
 
 # WARNING, UGLY HARD CODED MESS! FIX PRIOR TO FULL PUBLICATION :)
 count_names <- c("Sample_ID", "Species", "Time_Method",
@@ -58,22 +58,33 @@ for (i in col_names)
 covars <- plyr::join(counts, covariates_reduced, by = "Sample_ID", type = "left", match = "all")
 
 # Remove rows with NA covariates
-to_remove <- which(is.na(covars$roaddist))
-counts <- counts[-c(to_remove), ]
-design <- design[-c(to_remove), ]
-covars <- covars[-c(to_remove), ]
+to_remove <- which(is.na(covars$JD))
+if (length(to_remove > 0))
+{
+  counts <- counts[-c(to_remove), ]
+  design <- design[-c(to_remove), ]
+  covars <- covars[-c(to_remove), ]  
+}
 
-to_remove <- which(is.na(covars$ForestOnly_5x5))
-counts <- counts[-c(to_remove), ]
-design <- design[-c(to_remove), ]
-covars <- covars[-c(to_remove), ]
+
+to_remove <- which(is.na(covars$TSSR))
+if (length(to_remove > 0))
+{
+  counts <- counts[-c(to_remove), ]
+  design <- design[-c(to_remove), ]
+  covars <- covars[-c(to_remove), ]  
+}
+
+# Scale the covariates
+covars$JD <- covars$JD / 365
+covars$TSSR <- covars$TSSR / 24
 
 # Build matrices by species :D
 species <- sort(as.character(unique(counts$Species)))
 
 for (s in species)
 {
-  if (nrow(counts[counts$Species == s, ]) >= 50)
+  if (nrow(counts[counts$Species == s, ]) >= 75)
   {
     assign(paste0("Y_",s), as.matrix(counts[counts$Species==s, col_names]))
     assign(paste0("D_",s), as.matrix(design[design$Species==s, col_names]))
@@ -99,19 +110,28 @@ for (s in species)
 multi_multi <- function(x) {
   require(detect)
   m1 = cmulti(x$Y | x$D ~ 1, type="rem")
-  m2 = cmulti(x$Y | x$D ~ x$C$roaddist, type="rem")
-  m3 = cmulti(x$Y | x$D ~ x$C$ForestOnly_5x5, type="rem")
-  m4 = cmulti(x$Y | x$D ~ x$C$roaddist + x$C$ForestOnly_5x5, type="rem")
-  m5 = cmulti(x$Y | x$D ~ x$C$roaddist * x$C$ForestOnly_5x5, type="rem")
-  return(list(m1,m2,m3,m4,m5))
+  m2 = cmulti(x$Y | x$D ~ x$C$TSSR, type="rem")
+  m3 = cmulti(x$Y | x$D ~ x$C$JD, type="rem")
+  m4 = cmulti(x$Y | x$D ~ x$C$TSSR + x$C$TSSR^2)
+  m5 = cmulti(x$Y | x$D ~ x$C$JD + x$C$JD^2)
+  m6 = cmulti(x$Y | x$D ~ x$C$TSSR + x$C$JD, type="rem")
+  m7 = cmulti(x$Y | x$D ~ x$C$TSSR + x$C$TSSR^2 + x$C$JD, type="rem")
+  m8 = cmulti(x$Y | x$D ~ x$C$TSSR + x$C$JD + x$C$JD^2, type="rem")
+  m9 = cmulti(x$Y | x$D ~ x$C$TSSR + x$C$TSSR^2 + x$C$JD + x$C$JD^2, type="rem")
+  return(list(m1, m2, m3, m4, m5, m6, m7, m8, m9))
 }
 
 cluster <- makeCluster(detectCores() - 1)
 clusterEvalQ(cluster, library(detect))
 clusterExport(cluster, "input_list"); clusterExport(cluster, "multi_multi")
+
+start_time <- Sys.time()
 removal_output_list <- parLapply(cl = cluster,
                                  X = input_list,
                                  fun = multi_multi)
+end_time <- Sys.time()
+elapsed_time <- end_time - start_time
+
 stopCluster(cluster)
 
 save(removal_output_list, file = "data/removal_output_list.rda")
@@ -129,35 +149,35 @@ bic_list <- lapply(removal_output_list, FUN = bic_multi)
 names(bic_list) <- species
 
 #Create dataframe to contain coefficients
-rem_coef <- data.frame(Species=species, model=NA, n=NA, sraint=NA,sraroaddist=NA,sraforest=NA,sraroaddistforest=NA)
+rem_coef <- data.frame(Species=species, r_model=NA, r_n=NA, r_int=NA,r_roaddist=NA,r_forest=NA,r_roaddistforest=NA)
 
 #Extracts model coefficients based on top model in BIC tables and assigns them to the correct column
 for (i in species) {
   model = which(bic_list[[i]]==min(bic_list[[i]])) #determine which model has lowest BIC
   coef = coef(removal_output_list[[i]][[model]]) #extract coefficients from best model
-  rem_coef[which(rem_coef$Species==i),"model"]=model
-  rem_coef[which(rem_coef$Species==i),"n"]=nrow(get(paste0("Y_",i)))
+  rem_coef[which(rem_coef$Species==i),"r_model"]=model
+  rem_coef[which(rem_coef$Species==i),"r_n"]=nrow(get(paste0("Y_",i)))
   if (model==1) {
-    rem_coef[which(rem_coef$Species==i),"sraint"] = coef[1]
+    rem_coef[which(rem_coef$Species==i),"r_int"] = coef[1]
   }
   if (model==2) {
-    rem_coef[which(rem_coef$Species==i),"sraint"] = coef[1]
-    rem_coef[which(rem_coef$Species==i),"sraroaddist"] = coef[2]
+    rem_coef[which(rem_coef$Species==i),"r_int"] = coef[1]
+    rem_coef[which(rem_coef$Species==i),"r_roaddist"] = coef[2]
   }
   if (model==3) {
-    rem_coef[which(rem_coef$Species==i),"sraint"] = coef[1]
-    rem_coef[which(rem_coef$Species==i),"sraforest"] = coef[2]
+    rem_coef[which(rem_coef$Species==i),"r_int"] = coef[1]
+    rem_coef[which(rem_coef$Species==i),"r_forest"] = coef[2]
   }
   if (model==4) {
-    rem_coef[which(rem_coef$Species==i),"sraint"] = coef[1]
-    rem_coef[which(rem_coef$Species==i),"sraroaddist"] = coef[2]
-    rem_coef[which(rem_coef$Species==i),"sraforest"] = coef[3]
+    rem_coef[which(rem_coef$Species==i),"r_int"] = coef[1]
+    rem_coef[which(rem_coef$Species==i),"r_roaddist"] = coef[2]
+    rem_coef[which(rem_coef$Species==i),"r_forest"] = coef[3]
   }
   if (model==5) {
-    rem_coef[which(rem_coef$Species==i),"sraint"] = coef[1]
-    rem_coef[which(rem_coef$Species==i),"sraroaddist"] = coef[2]
-    rem_coef[which(rem_coef$Species==i),"sraforest"] = coef[3]
-    rem_coef[which(rem_coef$Species==i),"sraroaddistforest"] = coef[4]
+    rem_coef[which(rem_coef$Species==i),"r_int"] = coef[1]
+    rem_coef[which(rem_coef$Species==i),"r_roaddist"] = coef[2]
+    rem_coef[which(rem_coef$Species==i),"r_forest"] = coef[3]
+    rem_coef[which(rem_coef$Species==i),"r_roaddistforest"] = coef[4]
   }
   rm(coef,model)
 }

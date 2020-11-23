@@ -146,7 +146,7 @@ bic_list <- lapply(distance_output_list, FUN = bic_multi)
 names(bic_list) <- species
 
 #Create dataframe to contain coefficients
-dist_coef <- data.frame(Species=species, model=NA, n=NA, sraint=NA,sraroaddist=NA,sraforest=NA,sraroaddistforest=NA)
+dist_coef <- data.frame(Species=species, d_model=NA, d_n=NA, d_int=NA,d_roaddist=NA,d_forest=NA,d_roaddistforest=NA, logtau = NA)
 
 #Extracts model coefficients based on top model in BIC tables and assigns them to the correct column
 for (i in species) {
@@ -155,34 +155,34 @@ for (i in species) {
     next
   }
   model = which(bic_list[[i]]==min(bic_list[[i]])) #determine which model has lowest BIC
-  coef = coef(removal_output_list[[i]][[model]]) #extract coefficients from best model
+  coef = coef(distance_output_list[[i]][[model]]) #extract coefficients from best model
   if (is.null(coef))
   {
     next
   }
-  dist_coef[which(dist_coef$Species==i),"model"]=model
-  dist_coef[which(dist_coef$Species==i),"n"]=nrow(get(paste0("Y_",i)))
+  dist_coef[which(dist_coef$Species==i),"d_model"]=model
+  dist_coef[which(dist_coef$Species==i),"d_n"]=nrow(get(paste0("Y_",i)))
   if (model==1) {
-    dist_coef[which(dist_coef$Species==i),"sraint"] = coef[1]
+    dist_coef[which(dist_coef$Species==i),"d_int"] = coef[1]
   }
   if (model==2) {
-    dist_coef[which(dist_coef$Species==i),"sraint"] = coef[1]
-    dist_coef[which(dist_coef$Species==i),"sraroaddist"] = coef[2]
+    dist_coef[which(dist_coef$Species==i),"d_int"] = coef[1]
+    dist_coef[which(dist_coef$Species==i),"d_roaddist"] = coef[2]
   }
   if (model==3) {
-    dist_coef[which(dist_coef$Species==i),"sraint"] = coef[1]
-    dist_coef[which(dist_coef$Species==i),"sraforest"] = coef[2]
+    dist_coef[which(dist_coef$Species==i),"d_int"] = coef[1]
+    dist_coef[which(dist_coef$Species==i),"d_forest"] = coef[2]
   }
   if (model==4) {
-    dist_coef[which(dist_coef$Species==i),"sraint"] = coef[1]
-    dist_coef[which(dist_coef$Species==i),"sraroaddist"] = coef[2]
-    dist_coef[which(dist_coef$Species==i),"sraforest"] = coef[3]
+    dist_coef[which(dist_coef$Species==i),"d_int"] = coef[1]
+    dist_coef[which(dist_coef$Species==i),"d_roaddist"] = coef[2]
+    dist_coef[which(dist_coef$Species==i),"d_forest"] = coef[3]
   }
   if (model==5) {
-    dist_coef[which(dist_coef$Species==i),"sraint"] = coef[1]
-    dist_coef[which(dist_coef$Species==i),"sraroaddist"] = coef[2]
-    dist_coef[which(dist_coef$Species==i),"sraforest"] = coef[3]
-    dist_coef[which(dist_coef$Species==i),"sraroaddistforest"] = coef[4]
+    dist_coef[which(dist_coef$Species==i),"d_int"] = coef[1]
+    dist_coef[which(dist_coef$Species==i),"d_roaddist"] = coef[2]
+    dist_coef[which(dist_coef$Species==i),"d_forest"] = coef[3]
+    dist_coef[which(dist_coef$Species==i),"d_roaddistforest"] = coef[4]
   }
   rm(coef,model)
 }
