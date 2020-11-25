@@ -48,6 +48,7 @@ project_samples <- do.call(rbind, project_samples)
 # Create time count matrix
 time_only <- project_counts[, c(1:3, 7,8 )]
 time_only <- time_only[-which(time_only$Time_Method == "ZZ"), ]
+time_only <- time_only[-which(is.na(time_only$Time_Level)), ]
 time_count_matrix <- dcast(time_only,
                            Sample_ID + Species + Time_Method ~ Time_Level,
                            value.var = "Abundance",
