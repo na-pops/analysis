@@ -3,7 +3,7 @@
 # NA-POPS: analysis
 # 1-combine-data.R
 # Created August 2020
-# Last Updated October 2020
+# Last Updated November 2020
 
 ####### Import Libraries and External Files #######
 
@@ -86,12 +86,12 @@ landcover_covariates <- do.call(rbind, landcover_covariates)
 temporal_covariates <- do.call(rbind, temporal_covariates)
 
 # Create time removal design matrix
-time <- read.csv(here::here("../utilities/time_lookup.csv"))
+time <- read.csv("../covariates/survey/time_lookup.csv")
 time <- time[-c(1), ]
 time_design <- dcast(time, Method + Max_Duration ~ Level, value.var = "End_Duration")
 
 # Create distance design matrix
-dist <- read.csv(here::here("../utilities/distance_lookup.csv"))
+dist <- read.csv("../covariates/survey/distance_lookup.csv")
 dist <- dist[-c(1), ]
 dist_design <- dcast(dist, Method + Max_Distance ~ Level, value.var = "End_Distance")
 
