@@ -14,28 +14,28 @@ library(parallel)
 ####### Read Data #################################
 
 load(file = here::here("data/dist_count_matrix.rda"))
-load(file = here::here("data/covariates.rda"))
+load(file = here::here("data/landcover_covariates.rda"))
 load(file = here::here("data/dist_design.rda"))
 
 ####### Data Wrangling ############################
 
 # Drop most of the landcover covariates for now
-covariates_reduced <- covariates[, c("Sample_ID", "roaddist", "ForestOnly_5x5")]
+covariates_reduced <- landcover_covariates[, c("Sample_ID", "roaddist", "ForestOnly_5x5")]
 covariates_reduced$ForestOnly_5x5 <- covariates_reduced$ForestOnly_5x5 / 25
 
-# Drop method I
-dist_count_matrix <- dist_count_matrix[-which(dist_count_matrix$Distance_Method == "I"), ]
-dist_design <- dist_design[-which(dist_design$Method == "I"), ]
+# # Drop method I
+# dist_count_matrix <- dist_count_matrix[-which(dist_count_matrix$Distance_Method == "I"), ]
+# dist_design <- dist_design[-which(dist_design$Method == "I"), ]
 
 # WARNING, UGLY HARD CODED MESS! FIX PRIOR TO FULL PUBLICATION :)
 dist_count_matrix$"7" <- rep(0, nrow(dist_count_matrix))
 
 count_names <- c("Sample_ID", "Species", "Distance_Method",
-                 paste0(rep("Int", times = 7), 1:7))
+                 paste0(rep("Int", times = 12), 1:12))
 names(dist_count_matrix) <- count_names
 
 design_names <- c("Distance_Method", "Max_Distance",
-                  paste0(rep("Interval", times = 7), 1:7))
+                  paste0(rep("Interval", times = 12), 1:12))
 names(dist_design) <- design_names
 
 # Join data
@@ -85,7 +85,7 @@ for (s in species)
     assign(paste0("D_",s), as.matrix(design[design$Species==s, col_names]))
     assign(paste0("C_",s), subset(covars,
                                   Species==s,
-                                  select = c(11:12)))
+                                  select = c(16:17)))
   }else
   {
     species <- species[!(species %in% s)]
@@ -125,12 +125,18 @@ graceful_mm <- function(x)
 cluster <- makeCluster(detectCores() - 1)
 clusterEvalQ(cluster, library(detect))
 clusterExport(cluster, "input_list"); clusterExport(cluster, "multi_multi"); clusterExport(cluster, "graceful_mm")
+
+start_time <- Sys.time()
 distance_output_list <- parLapply(cl = cluster,
                                   X = input_list,
                                   fun = graceful_mm)
+end_time <- Sys.time()
+elapsed_time <- end_time - start_time
+
 stopCluster(cluster)
 
 save(distance_output_list, file = "data/distance_output_list.rda")
+save(elapsed_time, file = "data/elapsed_time_distance.rda")
 
 ########### Model Selection #######################
 
