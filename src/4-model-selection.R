@@ -3,9 +3,7 @@
 # NA-POPS: analysis
 # 4-model-selection.R
 # Created November 2020
-# Last Updated November 2020
-
-####### Import Libraries and External Files #######
+# Last Updated December 2020
 
 ####### Set Constants #############################
 
