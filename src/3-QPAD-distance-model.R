@@ -3,13 +3,14 @@
 # NA-POPS: analysis
 # 3-QPAD-distance-model.R
 # Created August 2020
-# Last Updated August 2020
+# Last Updated November 2020
 
 ####### Import Libraries and External Files #######
 
 library(detect)
 library(plyr)
-library(parallel)
+library(doParallel)
+library(foreach)
 
 ####### Read Data #################################
 
@@ -101,42 +102,58 @@ for (s in species)
 
 ########### Modelling #############################
 
-# Function to do multiple cmulti bois
-multi_multi <- function(x) {
-  
-  require(detect)
-  m1 = cmulti(x$Y | x$D ~ 1, type="dis")
-  m2 = cmulti(x$Y | x$D ~ x$C$roaddist, type="dis")
-  m3 = cmulti(x$Y | x$D ~ x$C$ForestOnly_5x5, type="dis")
-  m4 = cmulti(x$Y | x$D ~ x$C$roaddist + x$C$ForestOnly_5x5, type="dis")
-  m5 = cmulti(x$Y | x$D ~ x$C$roaddist * x$C$ForestOnly_5x5, type="dis")
-  return(list(m1,m2,m3,m4,m5))
-}
+# # Function to do multiple cmulti bois
+# multi_multi <- function(x) {
+#   
+#   require(detect)
+#   m1 = cmulti(x$Y | x$D ~ 1, type="dis")
+#   m2 = cmulti(x$Y | x$D ~ x$C$roaddist, type="dis")
+#   m3 = cmulti(x$Y | x$D ~ x$C$ForestOnly_5x5, type="dis")
+#   m4 = cmulti(x$Y | x$D ~ x$C$roaddist + x$C$ForestOnly_5x5, type="dis")
+#   m5 = cmulti(x$Y | x$D ~ x$C$roaddist * x$C$ForestOnly_5x5, type="dis")
+#   return(list(m1,m2,m3,m4,m5))
+# }
+# 
+# graceful_mm <- function(x)
+# {
+#   to_return <- NA
+#   tryCatch({to_return <- multi_multi(x);}, 
+#            error = function(e) {to_return <- NA});
+#   
+#   return(to_return)
+# }
+# 
+# cluster <- makeCluster(detectCores() - 1)
+# clusterEvalQ(cluster, library(detect))
+# clusterExport(cluster, "input_list"); clusterExport(cluster, "multi_multi"); clusterExport(cluster, "graceful_mm")
+# 
+# start_time <- Sys.time()
+# distance_output_list <- parLapply(cl = cluster,
+#                                   X = input_list,
+#                                   fun = graceful_mm)
+# end_time <- Sys.time()
+# elapsed_time <- end_time - start_time
+# 
+# stopCluster(cluster)
+# 
+# save(distance_output_list, file = "data/distance_output_list.rda")
+# save(elapsed_time, file = "data/elapsed_time_distance.rda")
 
-graceful_mm <- function(x)
-{
-  to_return <- NA
-  tryCatch({to_return <- multi_multi(x);}, 
-           error = function(e) {to_return <- NA});
-  
-  return(to_return)
-}
+cluster <- makeCluster(3, type = "PSOCK")
+registerDoParallel(cluster)
 
-cluster <- makeCluster(detectCores() - 1)
-clusterEvalQ(cluster, library(detect))
-clusterExport(cluster, "input_list"); clusterExport(cluster, "multi_multi"); clusterExport(cluster, "graceful_mm")
-
-start_time <- Sys.time()
-distance_output_list <- parLapply(cl = cluster,
-                                  X = input_list,
-                                  fun = graceful_mm)
-end_time <- Sys.time()
-elapsed_time <- end_time - start_time
-
+foreach(sp = names(input_list), .packages = 'detect') %dopar%
+  {
+    x <- input_list[[sp]]
+    m1 = cmulti(x$Y | x$D ~ 1, type="dis")
+    m2 = cmulti(x$Y | x$D ~ x$C$roaddist, type="dis")
+    m3 = cmulti(x$Y | x$D ~ x$C$ForestOnly_5x5, type="dis")
+    m4 = cmulti(x$Y | x$D ~ x$C$roaddist + x$C$ForestOnly_5x5, type="dis")
+    m5 = cmulti(x$Y | x$D ~ x$C$roaddist * x$C$ForestOnly_5x5, type="dis")
+    distance_list <- list(m1, m2, m3, m4, m5)
+    save(distance_list, file = paste0("data/distance/", sp, ".rda"))    
+  }
 stopCluster(cluster)
-
-save(distance_output_list, file = "data/distance_output_list.rda")
-save(elapsed_time, file = "data/elapsed_time_distance.rda")
 
 ########### Model Selection #######################
 

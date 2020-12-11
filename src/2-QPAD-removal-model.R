@@ -9,7 +9,8 @@
 
 library(detect)
 library(plyr)
-library(parallel)
+library(doParallel)
+library(foreach)
 
 ####### Read Data #################################
 
@@ -103,35 +104,57 @@ for (s in species)
 ########### Modelling #############################
 
 # Function to do multiple cmulti bois
-multi_multi <- function(x) {
-  require(detect)
-  m1 = cmulti(x$Y | x$D ~ 1, type="rem")
-  m2 = cmulti(x$Y | x$D ~ x$C$TSSR, type="rem")
-  m3 = cmulti(x$Y | x$D ~ x$C$JD, type="rem")
-  m4 = cmulti(x$Y | x$D ~ x$C$TSSR + x$C$TSSR2, type = "rem")
-  m5 = cmulti(x$Y | x$D ~ x$C$JD + x$C$JD2, type = "rem")
-  m6 = cmulti(x$Y | x$D ~ x$C$TSSR + x$C$JD, type="rem")
-  m7 = cmulti(x$Y | x$D ~ x$C$TSSR + x$C$TSSR2 + x$C$JD, type="rem")
-  m8 = cmulti(x$Y | x$D ~ x$C$TSSR + x$C$JD + x$C$JD2, type="rem")
-  m9 = cmulti(x$Y | x$D ~ x$C$TSSR + x$C$TSSR2 + x$C$JD + x$C$JD2, type="rem")
-  return(list(m1, m2, m3, m4, m5, m6, m7, m8, m9))
-}
+# multi_multi <- function(x) {
+#   require(detect)
+#   sp <- names(x)
+#   save(sp, file = paste0("data/", sp, ".rda"))
+#   m1 = cmulti(x$Y | x$D ~ 1, type="rem")
+#   m2 = cmulti(x$Y | x$D ~ x$C$TSSR, type="rem")
+#   m3 = cmulti(x$Y | x$D ~ x$C$JD, type="rem")
+#   m4 = cmulti(x$Y | x$D ~ x$C$TSSR + x$C$TSSR2, type = "rem")
+#   m5 = cmulti(x$Y | x$D ~ x$C$JD + x$C$JD2, type = "rem")
+#   m6 = cmulti(x$Y | x$D ~ x$C$TSSR + x$C$JD, type="rem")
+#   m7 = cmulti(x$Y | x$D ~ x$C$TSSR + x$C$TSSR2 + x$C$JD, type="rem")
+#   m8 = cmulti(x$Y | x$D ~ x$C$TSSR + x$C$JD + x$C$JD2, type="rem")
+#   m9 = cmulti(x$Y | x$D ~ x$C$TSSR + x$C$TSSR2 + x$C$JD + x$C$JD2, type="rem")
+#   return(list(m1, m2, m3, m4, m5, m6, m7, m8, m9))
+# }
 
-cluster <- makeCluster(detectCores() - 1)
-clusterEvalQ(cluster, library(detect))
-clusterExport(cluster, "input_list"); clusterExport(cluster, "multi_multi")
+# cluster <- makeCluster(detectCores() - 1)
+# clusterEvalQ(cluster, library(detect))
+# clusterExport(cluster, "input_list"); clusterExport(cluster, "multi_multi")
+# 
+# start_time <- Sys.time()
+# removal_output_list <- parLapply(cl = cluster,
+#                                  X = input_list,
+#                                  fun = multi_multi)
+# end_time <- Sys.time()
+# elapsed_time <- end_time - start_time
+# 
+# stopCluster(cluster)
+# 
+# save(removal_output_list, file = "data/removal_output_list.rda")
+# save(elapsed_time, file = "data/elapsed_time_removal.rda")
 
-start_time <- Sys.time()
-removal_output_list <- parLapply(cl = cluster,
-                                 X = input_list,
-                                 fun = multi_multi)
-end_time <- Sys.time()
-elapsed_time <- end_time - start_time
+cluster <- makeCluster(3, type = "PSOCK")
+registerDoParallel(cluster)
 
+foreach(sp = names(input_list), .packages = 'detect') %dopar%
+  {
+    x <- input_list[[sp]]
+    m1 = cmulti(x$Y | x$D ~ 1, type="rem")
+    m2 = cmulti(x$Y | x$D ~ x$C$TSSR, type="rem")
+    m3 = cmulti(x$Y | x$D ~ x$C$JD, type="rem")
+    m4 = cmulti(x$Y | x$D ~ x$C$TSSR + x$C$TSSR2, type = "rem")
+    m5 = cmulti(x$Y | x$D ~ x$C$JD + x$C$JD2, type = "rem")
+    m6 = cmulti(x$Y | x$D ~ x$C$TSSR + x$C$JD, type="rem")
+    m7 = cmulti(x$Y | x$D ~ x$C$TSSR + x$C$TSSR2 + x$C$JD, type="rem")
+    m8 = cmulti(x$Y | x$D ~ x$C$TSSR + x$C$JD + x$C$JD2, type="rem")
+    m9 = cmulti(x$Y | x$D ~ x$C$TSSR + x$C$TSSR2 + x$C$JD + x$C$JD2, type="rem")
+    removal_list <- list(m1, m2, m3, m4, m5, m6, m7, m8, m9)
+    save(removal_list, file = paste0("data/removal/", sp, ".rda"))    
+  }
 stopCluster(cluster)
-
-save(removal_output_list, file = "data/removal_output_list.rda")
-save(elapsed_time, file = "data/elapsed_time_removal.rda")
 
 ########### Model Selection #######################
 
