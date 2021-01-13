@@ -3,7 +3,7 @@
 # NA-POPS: analysis
 # 2-QPAD-removal-model.R
 # Created August 2020
-# Last Updated December 2020
+# Last Updated January 2021
 
 ####### Import Libraries and External Files #######
 
@@ -17,6 +17,7 @@ library(foreach)
 load(file = here::here("data/time_count_matrix.rda"))
 load(file = here::here("data/temporal_covariates.rda"))
 load(file = here::here("data/time_design.rda"))
+na_sp_list <- read.csv("../utilities/IBP-Alpha-Codes20.csv")
 
 ####### Data Wrangling ############################
 
@@ -79,7 +80,9 @@ if (length(to_remove > 0))
 }
 
 # Build matrices by species
-species <- sort(as.character(unique(counts$Species)))
+species_all <- sort(as.character(unique(counts$Species)))
+landbirds <- na_sp_list[which(na_sp_list$LANDBIRD == "TRUE"), "SPEC"]
+species <- species_all[which(species_all %in% landbirds)]
 
 for (s in species)
 {
