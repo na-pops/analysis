@@ -93,7 +93,7 @@ for (s in species)
     assign(paste0("D_",s), as.matrix(design[design$Species==s, col_names]))
     assign(paste0("C_",s), subset(covars,
                                   Species==s,
-                                  select = c(16:17)))
+                                  select = c(17:18)))
   }else
   {
     species <- species[!(species %in% s)]
