@@ -3,7 +3,7 @@
 # NA-POPS: analysis
 # 1-combine-data.R
 # Created August 2020
-# Last Updated November 2020
+# Last Updated January 2021
 
 ####### Import Libraries and External Files #######
 
@@ -50,15 +50,16 @@ time_only <- project_counts[, c(1:3, 7,8 )]
 time_only <- time_only[-which(time_only$Time_Method == "ZZ"), ]
 time_only <- time_only[-which(is.na(time_only$Time_Level)), ]
 time_count_matrix <- dcast(time_only,
-                           Sample_ID + Species + Time_Method ~ Time_Level,
+                           Sample_ID + Species + Time_Method ~ as.numeric(Time_Level),
                            value.var = "Abundance",
                            fun.aggregate = sum)
 
 # Create distance count matrix
 dist_only <- project_counts[, c(1:5)]
 dist_only <- dist_only[-which(dist_only$Distance_Method == "ZZ"), ]
+dist_only <- dist_only[-which(is.na(dist_only$Distance_Level)), ]
 dist_count_matrix <- dcast(dist_only,
-                           Sample_ID + Species + Distance_Method ~ Distance_Level,
+                           Sample_ID + Species + Distance_Method ~ as.numeric(Distance_Level),
                            value.var = "Abundance",
                            fun.aggregate = sum)
 
