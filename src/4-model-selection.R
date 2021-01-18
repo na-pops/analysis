@@ -52,6 +52,13 @@ for (s in species)
   model <- which(bic == min_bic)
   rem_coef[which(rem_coef$Species == s), "best_model"] <- model
   
+  vcv_best <- removal_list[[model]]$vcov
+  write.table(vcv_best,
+              file = paste0("../results/var-covar/removal/",
+                            s,
+                            "_best.csv"),
+              sep = ",", row.names = FALSE)
+  
   coef <- coef(removal_list[[model]])
   if (model == 1) {
     rem_coef[which(rem_coef$Species == s),"int_best"] = coef[1]
@@ -106,6 +113,13 @@ for (s in species)
   rem_coef[which(rem_coef$Species == s),"tssr2_full"] = coef_full[3]
   rem_coef[which(rem_coef$Species == s),"jd_full"] = coef_full[4]
   rem_coef[which(rem_coef$Species == s),"jd2_full"] = coef_full[5]
+  
+  vcv_full <- removal_list[[9]]$vcov
+  write.table(vcv_full,
+              file = paste0("../results/var-covar/removal/",
+                            s,
+                            "_full.csv"),
+              sep = ",", row.names = FALSE)
 }
 
 write.table(rem_coef, 
@@ -146,6 +160,13 @@ for (s in species)
   model <- which(bic == min_bic)
   dist_coef[which(dist_coef$Species == s), "best_model"] <- model
   
+  vcv_best <- distance_list[[model]]$vcov
+  write.table(vcv_best,
+              file = paste0("../results/var-covar/distance/",
+                            s,
+                            "_best.csv"),
+              sep = ",", row.names = FALSE)
+  
   coef <- coef(distance_list[[model]])
   if (model == 1) {
     dist_coef[which(dist_coef$Species == s),"int_best"] = coef[1]
@@ -177,6 +198,13 @@ for (s in species)
   dist_coef[which(dist_coef$Species == s),"road_full"] = coef_full[2]
   dist_coef[which(dist_coef$Species == s),"forest_full"] = coef_full[3]
   dist_coef[which(dist_coef$Species == s),"roadforest_full"] = coef_full[4]
+  
+  vcv_full <- distance_list[[5]]$vcov
+  write.table(vcv_full,
+              file = paste0("../results/var-covar/distance/",
+                            s,
+                            "_full.csv"),
+              sep = ",", row.names = FALSE)
 }
 
 write.table(dist_coef, 
