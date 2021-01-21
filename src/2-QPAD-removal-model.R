@@ -41,6 +41,17 @@ count_design <- plyr::join(time_count_matrix, time_design,
 to_remove <- which(is.na(count_design$Interval2))
 count_design <- count_design[-c(to_remove), ]
 
+# Filter out 99th percentile of observations (to possibly account for)
+# data which do not fit the closed-population assumption for detectability
+
+obs_sums <- data.frame(Sample_ID = count_design$Sample_ID,
+                       Sum = apply(count_design[,4:13], 1, FUN = sum))
+
+to_remove <- which(obs_sums$Sum >= 
+                     quantile(obs_sums$Sum, probs = 0.99))
+
+count_design <- count_design[-c(to_remove), ]
+
 # Create separate data frames
 counts <- count_design[,c("Sample_ID", "Species", "Time_Method", count_names[4:length(count_names)])]
 design <- count_design[,c("Sample_ID", "Species", "Time_Method", design_names[3:length(design_names)])]
