@@ -84,20 +84,66 @@ species_all <- sort(as.character(unique(counts$Species)))
 landbirds <- na_sp_list[which(na_sp_list$LANDBIRD == "TRUE"), "SPEC"]
 species <- species_all[which(species_all %in% landbirds)]
 
+# List of input counts
+Y <- vector(mode = "list", length = length(species))
+names(Y) <- species
+
+# List of input design
+D <- vector(mode = "list", length = length(species))
+names(D) <- species
+
+# List of input covariates
+C <- vector(mode = "list", length = length(species))
+names(C) <- species
+
+# Species indicator list
+sp_list <- vector(mode = "list", length = length(species))
+names(sp_list) <- species
+
 for (s in species)
 {
-  if (nrow(counts[counts$Species == s, ]) >= 75)
+  n_counts <- nrow(counts[counts$Species == s, ])
+  if (n_counts >= 75)
   {
-    assign(paste0("Y_",s), as.matrix(counts[counts$Species==s, col_names]))
-    assign(paste0("D_",s), as.matrix(design[design$Species==s, col_names]))
-    assign(paste0("C_",s), subset(covars,
-                                  Species==s,
-                                  select = c(14:17)))
-  }else
-  {
-    species <- species[!(species %in% s)]
+    Y[[s]] <- as.matrix(counts[counts$Species==s, col_names])
+    D[[s]] <- as.matrix(design[design$Species==s, col_names])
+    C[[s]] <- subset(covars,
+                     Species==s,
+                     select = c(14:17))
+    sp_list[[s]] <- data.frame(Species = rep(s, n_counts))
+    # assign(paste0("Y_",s), as.matrix(counts[counts$Species==s, col_names]))
+    # assign(paste0("D_",s), as.matrix(design[design$Species==s, col_names]))
+    # assign(paste0("C_",s), subset(covars,
+    #                               Species==s,
+    #                               select = c(14:17)))
   }
 }
+
+Y <- Y[lengths(Y) != 0]; Y <- do.call(rbind, Y)
+D <- D[lengths(D) != 0]; D <- do.call(rbind, D)
+C <- C[lengths(C) != 0]; C <- do.call(rbind, C)
+sp_list <- sp_list[lengths(sp_list) != 0]; sp_list <- do.call(rbind, sp_list)
+
+#' We'll have to flatten the ragged Y and D data frames down into a single
+#' dimension, so we need a variable to keep track of the number of non-NA
+#' entries per row, which conveniently will correspond to the maximum
+#' time bands for that particular sampling event
+group_sizes <- unname(apply(Y, 1, function(x) sum(!is.na(x))))
+
+Y_vec <- as.vector(t(Y))
+Y_vec <- Y_vec[!is.na(Y_vec)]
+
+D_vec <- as.vector(t(D))
+D_vec <- D_vec[!is.na(D_vec)]
+
+Y_sample <- unname(apply(Y, 1, function(x) sum(x, na.rm = TRUE)))
+
+
+
+
+
+
+
 
 input_list <- vector(mode="list", length=length(species))
 names(input_list) <- species
