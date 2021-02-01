@@ -119,70 +119,89 @@ D <- D[lengths(D) != 0]; D <- do.call(rbind, D)
 C <- C[lengths(C) != 0]; C <- do.call(rbind, C)
 sp_list <- sp_list[lengths(sp_list) != 0]; sp_list <- do.call(rbind, sp_list)
 
-#' Abundance of species x during time band j in sampling event i
-#' This is effectively our original Y matrix, flattened into one dimension,
-#' with all NAs removed.
-abund_per_time_band <- as.vector(t(Y))
-abund_per_time_band <- abund_per_time_band[!is.na(abund_per_time_band)]
+#' #' Abundance of species x during time band j in sampling event i
+#' #' This is effectively our original Y matrix, flattened into one dimension,
+#' #' with all NAs removed.
+#' abund_per_time_band <- as.vector(t(Y))
+#' abund_per_time_band <- abund_per_time_band[!is.na(abund_per_time_band)]
+#' 
+#' #' #' Total counts per species.
+#' #' I.e., total i x j BY SPECIES
+#' sp_list_count <- rep(sp_list[,1], times = time_bands_per_sample)
+#' count_per_species <- as.vector(table(sp_list_count))
+
+#' Corresponds with "bands_per_sample" in removal.stan
+time_bands_per_sample <- unname(apply(Y, 1, function(x) sum(!is.na(x))))
 
 #' Total species abundance per sampling event.
 #' I.e., this is the sum of Y_sij over j
+#' Corresponds with "abundance_per_sample" in removal.stan
 total_abund_per_sample <- unname(apply(Y, 1, function(x) sum(x, na.rm = TRUE)))
-
-#' For each sampling event, how many time bands were in that sampling event.
-#' In index terms, this is J for each i
-#' Length of this = TOTAL SAMPLES BEING CONSIDERED
-time_bands_per_sample <- unname(apply(Y, 1, function(x) sum(!is.na(x))))
 
 #' Total samples per species
 #' I.e., total i BY SPECIES
+#' Corresponds with "samples_per_species" in removal.stan
 samples_per_species <- as.vector(table(sp_list[,1]))
 
-#' Total counts per species.
-#' I.e., total i x j BY SPECIES
-sp_list_count <- rep(sp_list[,1], times = time_bands_per_sample)
-count_per_species <- as.vector(table(sp_list_count))
-
-max_time <- as.vector(t(D))
-max_time <- max_time[!is.na(max_time)]
-
+#' Correspinds with "X" in removal.stan
 X_names <- names(C)
 X <- cbind(rep(1, nrow(C)), C)
 names(X) <- c("Intercept", X_names)
 
+#' Corresponds with "abundance_per_band" in removal.stan
+abundance_per_band <- Y
+abundance_per_band[is.na(abundance_per_band)] <- 0
 
+#' Corresponds with "max_time" in removal.stan
+max_time <- D
+max_time[is.na(max_time)] <- 0
 
-
-
-
-
-
-input_list <- vector(mode="list", length=length(species))
-names(input_list) <- species
-for (s in species)
-{
-  input_list[[s]] <- list(Y=get(paste0("Y_",s)), D=get(paste0("D_",s)), C=get(paste0("C_",s)))
-}
+n_samples <- nrow(Y)
+n_cov <- ncol(X)
+n_species <- length(unique(sp_list[,1]))
+max_intervals <- ncol(Y)
 
 ########### Modelling #############################
 
-cluster <- makeCluster(3, type = "PSOCK")
-registerDoParallel(cluster)
+model <- stan_model(file = "models/removal.stan")
 
-foreach(sp = names(input_list), .packages = 'detect') %dopar%
-  {
-    x <- input_list[[sp]]
-    m1 = cmulti(x$Y | x$D ~ 1, type="rem")
-    m2 = cmulti(x$Y | x$D ~ x$C$TSSR, type="rem")
-    m3 = cmulti(x$Y | x$D ~ x$C$JD, type="rem")
-    m4 = cmulti(x$Y | x$D ~ x$C$TSSR + x$C$TSSR2, type = "rem")
-    m5 = cmulti(x$Y | x$D ~ x$C$JD + x$C$JD2, type = "rem")
-    m6 = cmulti(x$Y | x$D ~ x$C$TSSR + x$C$JD, type="rem")
-    m7 = cmulti(x$Y | x$D ~ x$C$TSSR + x$C$TSSR2 + x$C$JD, type="rem")
-    m8 = cmulti(x$Y | x$D ~ x$C$TSSR + x$C$JD + x$C$JD2, type="rem")
-    m9 = cmulti(x$Y | x$D ~ x$C$TSSR + x$C$TSSR2 + x$C$JD + x$C$JD2, type="rem")
-    removal_list <- list(m1, m2, m3, m4, m5, m6, m7, m8, m9)
-    save(removal_list, file = paste0("data/removal/", sp, ".rda"))    
-  }
 
-stopCluster(cluster)
+
+
+
+# 
+# 
+# 
+# 
+# 
+# 
+# 
+# input_list <- vector(mode="list", length=length(species))
+# names(input_list) <- species
+# for (s in species)
+# {
+#   input_list[[s]] <- list(Y=get(paste0("Y_",s)), D=get(paste0("D_",s)), C=get(paste0("C_",s)))
+# }
+# 
+# ########### Modelling #############################
+# 
+# cluster <- makeCluster(3, type = "PSOCK")
+# registerDoParallel(cluster)
+# 
+# foreach(sp = names(input_list), .packages = 'detect') %dopar%
+#   {
+#     x <- input_list[[sp]]
+#     m1 = cmulti(x$Y | x$D ~ 1, type="rem")
+#     m2 = cmulti(x$Y | x$D ~ x$C$TSSR, type="rem")
+#     m3 = cmulti(x$Y | x$D ~ x$C$JD, type="rem")
+#     m4 = cmulti(x$Y | x$D ~ x$C$TSSR + x$C$TSSR2, type = "rem")
+#     m5 = cmulti(x$Y | x$D ~ x$C$JD + x$C$JD2, type = "rem")
+#     m6 = cmulti(x$Y | x$D ~ x$C$TSSR + x$C$JD, type="rem")
+#     m7 = cmulti(x$Y | x$D ~ x$C$TSSR + x$C$TSSR2 + x$C$JD, type="rem")
+#     m8 = cmulti(x$Y | x$D ~ x$C$TSSR + x$C$JD + x$C$JD2, type="rem")
+#     m9 = cmulti(x$Y | x$D ~ x$C$TSSR + x$C$TSSR2 + x$C$JD + x$C$JD2, type="rem")
+#     removal_list <- list(m1, m2, m3, m4, m5, m6, m7, m8, m9)
+#     save(removal_list, file = paste0("data/removal/", sp, ".rda"))    
+#   }
+# 
+# stopCluster(cluster)
