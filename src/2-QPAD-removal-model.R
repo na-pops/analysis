@@ -3,7 +3,7 @@
 # NA-POPS: analysis
 # 2-QPAD-removal-model.R
 # Created August 2020
-# Last Updated January 2021
+# Last Updated February 2021
 
 ####### Import Libraries and External Files #######
 
@@ -111,11 +111,6 @@ for (s in species)
                      Species==s,
                      select = c(14:17))
     sp_list[[s]] <- data.frame(Species = rep(s, n_counts))
-    # assign(paste0("Y_",s), as.matrix(counts[counts$Species==s, col_names]))
-    # assign(paste0("D_",s), as.matrix(design[design$Species==s, col_names]))
-    # assign(paste0("C_",s), subset(covars,
-    #                               Species==s,
-    #                               select = c(14:17)))
   }
 }
 
@@ -124,19 +119,36 @@ D <- D[lengths(D) != 0]; D <- do.call(rbind, D)
 C <- C[lengths(C) != 0]; C <- do.call(rbind, C)
 sp_list <- sp_list[lengths(sp_list) != 0]; sp_list <- do.call(rbind, sp_list)
 
-#' We'll have to flatten the ragged Y and D data frames down into a single
-#' dimension, so we need a variable to keep track of the number of non-NA
-#' entries per row, which conveniently will correspond to the maximum
-#' time bands for that particular sampling event
-group_sizes <- unname(apply(Y, 1, function(x) sum(!is.na(x))))
+#' Abundance of species x during time band j in sampling event i
+#' This is effectively our original Y matrix, flattened into one dimension,
+#' with all NAs removed.
+abund_per_time_band <- as.vector(t(Y))
+abund_per_time_band <- abund_per_time_band[!is.na(abund_per_time_band)]
 
-Y_vec <- as.vector(t(Y))
-Y_vec <- Y_vec[!is.na(Y_vec)]
+#' Total species abundance per sampling event.
+#' I.e., this is the sum of Y_sij over j
+total_abund_per_sample <- unname(apply(Y, 1, function(x) sum(x, na.rm = TRUE)))
 
-D_vec <- as.vector(t(D))
-D_vec <- D_vec[!is.na(D_vec)]
+#' For each sampling event, how many time bands were in that sampling event.
+#' In index terms, this is J for each i
+#' Length of this = TOTAL SAMPLES BEING CONSIDERED
+time_bands_per_sample <- unname(apply(Y, 1, function(x) sum(!is.na(x))))
 
-Y_sample <- unname(apply(Y, 1, function(x) sum(x, na.rm = TRUE)))
+#' Total samples per species
+#' I.e., total i BY SPECIES
+samples_per_species <- as.vector(table(sp_list[,1]))
+
+#' Total counts per species.
+#' I.e., total i x j BY SPECIES
+sp_list_count <- rep(sp_list[,1], times = time_bands_per_sample)
+count_per_species <- as.vector(table(sp_list_count))
+
+max_time <- as.vector(t(D))
+max_time <- max_time[!is.na(max_time)]
+
+X_names <- names(C)
+X <- cbind(rep(1, nrow(C)), C)
+names(X) <- c("Intercept", X_names)
 
 
 
