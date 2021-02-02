@@ -25,16 +25,15 @@ data {
 }
 
 parameters {
-  vector[n_covariates] mu;               // mean vector
+  row_vector[n_covariates] mu;           // mean vector
   vector<lower = 0>[n_covariates] tau;   // scale vector for Sigma
   corr_matrix[n_covariates] Omega;       // correlation matrix for Sigma
-  matrix[n_covariates, n_species] gamma; // coefficients of interest
+  matrix[n_species, n_covariates] gamma; // coefficients of interest
 }
 
 model {
   vector[n_samples] log_phi;             // singing rate
   matrix[n_samples, max_intervals] Pi;   // probabilities
-  int pos = 1;
   
   Omega ~ lkj_corr(2);
   tau ~ cauchy(0, 2.5);
@@ -45,11 +44,8 @@ model {
   for (s in 1:n_species)
   {
     gamma[,s] ~ multi_normal(mu, quad_form_diag(Omega, tau));
-    
-    log_phi[pos:pos + samples_per_species[s] - 1] = block(X, pos, 1, samples_per_species[s], n_covariates) * gamma[,s];
-    
-    pos = pos + samples_per_species[s];
   }
+  log_phi = rows_dot_product(X, to_matrix(gamma));
   
   for (i in 1:n_samples)
   {
