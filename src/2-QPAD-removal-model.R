@@ -7,16 +7,17 @@
 
 ####### Import Libraries and External Files #######
 
-library(detect)
+library(rstan)
+options(mc.cores = parallel::detectCores())
+rstan_options(auto_write = TRUE)
+
 library(plyr)
-library(doParallel)
-library(foreach)
 
 ####### Read Data #################################
 
-load(file = here::here("data/time_count_matrix.rda"))
-load(file = here::here("data/temporal_covariates.rda"))
-load(file = here::here("data/time_design.rda"))
+load("data/time_count_matrix.rda")
+load("data/temporal_covariates.rda")
+load("data/time_design.rda")
 na_sp_list <- read.csv("../utilities/IBP-Alpha-Codes20.csv")
 
 ####### Data Wrangling ############################
@@ -119,23 +120,12 @@ D <- D[lengths(D) != 0]; D <- do.call(rbind, D)
 C <- C[lengths(C) != 0]; C <- do.call(rbind, C)
 sp_list <- sp_list[lengths(sp_list) != 0]; sp_list <- do.call(rbind, sp_list)
 
-#' #' Abundance of species x during time band j in sampling event i
-#' #' This is effectively our original Y matrix, flattened into one dimension,
-#' #' with all NAs removed.
-#' abund_per_time_band <- as.vector(t(Y))
-#' abund_per_time_band <- abund_per_time_band[!is.na(abund_per_time_band)]
-#' 
-#' #' #' Total counts per species.
-#' #' I.e., total i x j BY SPECIES
-#' sp_list_count <- rep(sp_list[,1], times = time_bands_per_sample)
-#' count_per_species <- as.vector(table(sp_list_count))
-
 #' Corresponds with "bands_per_sample" in removal.stan
 time_bands_per_sample <- unname(apply(Y, 1, function(x) sum(!is.na(x))))
 
 #' Total species abundance per sampling event.
 #' I.e., this is the sum of Y_sij over j
-#' Corresponds with "abundance_per_sample" in removal.stan
+#' Corresponds with "abund_per_sample" in removal.stan
 total_abund_per_sample <- unname(apply(Y, 1, function(x) sum(x, na.rm = TRUE)))
 
 #' Total samples per species
@@ -148,7 +138,7 @@ X_names <- names(C)
 X <- cbind(rep(1, nrow(C)), C)
 names(X) <- c("Intercept", X_names)
 
-#' Corresponds with "abundance_per_band" in removal.stan
+#' Corresponds with "abund_per_band" in removal.stan
 abundance_per_band <- Y
 abundance_per_band[is.na(abundance_per_band)] <- 0
 
@@ -161,47 +151,28 @@ n_cov <- ncol(X)
 n_species <- length(unique(sp_list[,1]))
 max_intervals <- ncol(Y)
 
+stan_data <- list(n_samples = n_samples,
+                  n_covariates = n_cov,
+                  n_species = n_species,
+                  max_intervals = max_intervals,
+                  samples_per_species = samples_per_species,
+                  abund_per_band = abundance_per_band,
+                  abund_per_sample = total_abund_per_sample,
+                  bands_per_sample = time_bands_per_sample,
+                  max_time = max_time,
+                  X = X)
+
 ########### Modelling #############################
 
 model <- stan_model(file = "models/removal.stan")
-
-
-
-
-
-# 
-# 
-# 
-# 
-# 
-# 
-# 
-# input_list <- vector(mode="list", length=length(species))
-# names(input_list) <- species
-# for (s in species)
-# {
-#   input_list[[s]] <- list(Y=get(paste0("Y_",s)), D=get(paste0("D_",s)), C=get(paste0("C_",s)))
-# }
-# 
-# ########### Modelling #############################
-# 
-# cluster <- makeCluster(3, type = "PSOCK")
-# registerDoParallel(cluster)
-# 
-# foreach(sp = names(input_list), .packages = 'detect') %dopar%
-#   {
-#     x <- input_list[[sp]]
-#     m1 = cmulti(x$Y | x$D ~ 1, type="rem")
-#     m2 = cmulti(x$Y | x$D ~ x$C$TSSR, type="rem")
-#     m3 = cmulti(x$Y | x$D ~ x$C$JD, type="rem")
-#     m4 = cmulti(x$Y | x$D ~ x$C$TSSR + x$C$TSSR2, type = "rem")
-#     m5 = cmulti(x$Y | x$D ~ x$C$JD + x$C$JD2, type = "rem")
-#     m6 = cmulti(x$Y | x$D ~ x$C$TSSR + x$C$JD, type="rem")
-#     m7 = cmulti(x$Y | x$D ~ x$C$TSSR + x$C$TSSR2 + x$C$JD, type="rem")
-#     m8 = cmulti(x$Y | x$D ~ x$C$TSSR + x$C$JD + x$C$JD2, type="rem")
-#     m9 = cmulti(x$Y | x$D ~ x$C$TSSR + x$C$TSSR2 + x$C$JD + x$C$JD2, type="rem")
-#     removal_list <- list(m1, m2, m3, m4, m5, m6, m7, m8, m9)
-#     save(removal_list, file = paste0("data/removal/", sp, ".rda"))    
-#   }
-# 
-# stopCluster(cluster)
+stime = system.time(stan_fit <- 
+                      sampling(model,
+                               data = stan_data,
+                               verbose = TRUE,
+                               chains = 3,
+                               iter = 2000,
+                               warmup = 1000,
+                               cores = 3,
+                               pars = c("gamma"),
+                               control = list(adapt_delta = 0.8,
+                                              max_treedepth = 15)))
