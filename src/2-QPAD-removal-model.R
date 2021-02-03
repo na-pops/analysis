@@ -128,12 +128,11 @@ time_bands_per_sample <- unname(apply(Y, 1, function(x) sum(!is.na(x))))
 #' Corresponds with "abund_per_sample" in removal.stan
 total_abund_per_sample <- unname(apply(Y, 1, function(x) sum(x, na.rm = TRUE)))
 
-#' Total samples per species
-#' I.e., total i BY SPECIES
-#' Corresponds with "samples_per_species" in removal.stan
-samples_per_species <- as.vector(table(sp_list[,1]))
+#' Factored list of species
+#' Corresponds with "species" in removal.stan
+sp_list_numeric <- as.numeric(as.factor(sp_list[,1]))
 
-#' Correspinds with "X" in removal.stan
+#' Corresponds with "X" in removal.stan
 X_names <- names(C)
 X <- cbind(rep(1, nrow(C)), C)
 names(X) <- c("Intercept", X_names)
@@ -155,7 +154,7 @@ stan_data <- list(n_samples = n_samples,
                   n_covariates = n_cov,
                   n_species = n_species,
                   max_intervals = max_intervals,
-                  samples_per_species = samples_per_species,
+                  species = sp_list_numeric,
                   abund_per_band = abundance_per_band,
                   abund_per_sample = total_abund_per_sample,
                   bands_per_sample = time_bands_per_sample,
@@ -170,9 +169,7 @@ stime = system.time(stan_fit <-
                                data = stan_data,
                                verbose = TRUE,
                                chains = 3,
-                               iter = 2000,
-                               warmup = 1000,
+                               iter = 1000,
+                               warmup = 500,
                                cores = 3,
-                               pars = c("gamma"),
-                               control = list(adapt_delta = 0.8,
-                                              max_treedepth = 15)))
+                               pars = c("gamma")))

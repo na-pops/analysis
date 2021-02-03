@@ -16,7 +16,7 @@ data {
   int<lower = 1> n_covariates;        // total number of covariates
   int<lower = 1> n_species;           // total number of species being modelled
   int<lower = 2> max_intervals;       // maximum number of intervals being considered
-  int samples_per_species[n_species]; // number of samples per species
+  int species[n_samples];             // species being considered for each sample
   int abund_per_band[n_samples, max_intervals];// abundance in time band j for sample i
   vector[n_samples] abund_per_sample; // total abundnace for sample i
   int bands_per_sample[n_samples]; // number of time bands for sample i
@@ -43,9 +43,9 @@ model {
   
   for (s in 1:n_species)
   {
-    gamma[,s] ~ multi_normal(mu, quad_form_diag(Omega, tau));
+    gamma[s,] ~ multi_normal(mu, quad_form_diag(Omega, tau));
   }
-  log_phi = rows_dot_product(X, to_matrix(gamma));
+  log_phi = rows_dot_product(X, gamma[species,]);
   
   for (i in 1:n_samples)
   {
