@@ -3,7 +3,7 @@
 # NA-POPS: analysis
 # 6-napops-spatial-summary.R
 # Created February 2021
-# Last Updated February 2021
+# Last Updated March 2021
 
 ####### Import Libraries and External Files #######
 
@@ -15,8 +15,11 @@ library(tidyverse)
 
 load(file = here::here("data/counts.rda"))
 load(file = here::here("data/samples.rda"))
-bcrf <- read_sf(dsn = "../utilities/shp/bcr",
-                layer = 'bcrfinalg0_Project2_Dissolve')
+# bcrf <- read_sf(dsn = "../utilities/shp/bcr",
+#                 layer = 'bcrfinalg0_Project2_Dissolve')
+bcr <- read_sf(dsn = system.file("maps",
+                                   package="bbsBayes"),
+                 layer = "BBS_BCR_strata")
 strat <- read_sf(dsn = system.file("maps",
                                       package="bbsBayes"),
                     layer = "BBS_usgs_strata")
@@ -36,9 +39,6 @@ coords <- samples_no_bam[, c("Longitude", "Latitude")]
 coords <- coords[which(!is.na(coords$Latitude)), ]
 coords <- coords[which(!is.na(coords$Longitude)), ]
 pc = st_as_sf(coords,coords = c("Longitude","Latitude"), crs = 4326)
-
-
-bcr <- bcrf %>% st_transform(st_crs(pc))
 
 strat1 <- strat %>% st_transform(st_crs(pc))
 
@@ -149,7 +149,7 @@ for(sst in as.character(bam$ST_12))
 
 tt_df$nc_cat <- cut(tt_df$ncounts,breaks = c(-1,0,(c(100,200,500,1000,15000))))
 tt_df$sqrt_ncounts <- sqrt(tt_df$ncounts)
-project_coverage <- left_join(strat1,tt_df)
+bcr_state_coverage <- left_join(strat1,tt_df)
 
 ####### Analysis by State Only ####################
 
@@ -162,14 +162,33 @@ coords <- st_as_sf(coords,coords = c("Longitude","Latitude"), crs = 4326)
 state <- state %>% st_transform(st_crs(coords))
 
 counts_state <- st_intersects(state, coords)
-cs_df <- data.frame(State = state$ST_12,
-                    Counts = lengths(counts_state))
+state_coverage <- data.frame(ST_12 = state$ST_12,
+                             ncounts = lengths(counts_state),
+                             sqrt_ncounts = sqrt(lengths(counts_state)),
+                             stringsAsFactors = FALSE)
+state_coverage$nc_cat <- cut(state_coverage$ncounts, breaks = c(-1,0,(c(100,200,500,1000,15000))))
+state_coverage <- left_join(state, state_coverage)
+
+####### Analysis by BCR ####################
+
+coords <- project_samples[, c("Latitude", "Longitude")]
+
+coords <- coords[!is.na(coords$Latitude), ]
+coords <- coords[!is.na(coords$Longitude), ]
+
+coords <- st_as_sf(coords,coords = c("Longitude","Latitude"), crs = 4326)
+bcr <- bcr %>% st_transform(st_crs(coords))
+
+counts_bcr <- st_intersects(bcr, coords)
+bcr_coverage <- data.frame(ST_12 = bcr$ST_12,
+                           ncounts = lengths(counts_bcr),
+                           sqrt_ncounts = sqrt(lengths(counts_bcr)),
+                           stringsAsFactors = FALSE)
+bcr_coverage$nc_cat <- cut(bcr_coverage$ncounts, breaks = c(-1,0,(c(100,200,500,1000,15000))))
+bcr_coverage <- left_join(bcr, bcr_coverage)
 
 ####### Output Summary Statistics and Tables ######
 
-save(project_coverage, file = "../results/spatial-summary/project_coverage.rda")
-
-write.table(cs_df,
-            file = "../results/spatial-summary/counts_by_state.csv",
-            sep = ",",
-            row.names = FALSE)
+save(bcr_state_coverage, file = "../results/spatial-summary/project_coverage_bcr_state.rda")
+save(state_coverage, file = "../results/spatial-summary/project_coverage_state.rda")
+save(bcr_coverage, file = "../results/spatial-summary/project_coverage_bcr.rda")
