@@ -3,7 +3,7 @@
 # NA-POPS: analysis
 # 4-model-selection.R
 # Created November 2020
-# Last Updated January 2021
+# Last Updated March 2021
 
 ####### Import Libraries and External Files #######
 
@@ -22,6 +22,11 @@ bic_multi <- function(x)
 species <- substr(list.files(path = "data/removal"), 
                   start = 1, 
                   stop = 4)
+
+rem_vcv_best <- vector(mode = "list", length = length(species))
+rem_vcv_full <- vector(mode = "list", length = length(species))
+names(rem_vcv_best) <- species
+names(rem_vcv_full) <- species
 
 rem_coef <- data.frame(Species = species,
                        n = NA, 
@@ -52,7 +57,7 @@ for (s in species)
   model <- which(bic == min_bic)
   rem_coef[which(rem_coef$Species == s), "best_model"] <- model
   
-  vcv_best <- removal_list[[model]]$vcov
+  vcv_best <- rem_vcv_best[[s]] <- removal_list[[model]]$vcov
   write.table(vcv_best,
               file = paste0("../results/var-covar/removal/",
                             s,
@@ -114,7 +119,7 @@ for (s in species)
   rem_coef[which(rem_coef$Species == s),"jd_full"] = coef_full[4]
   rem_coef[which(rem_coef$Species == s),"jd2_full"] = coef_full[5]
   
-  vcv_full <- removal_list[[9]]$vcov
+  vcv_full <- rem_vcv_full[[s]] <- removal_list[[9]]$vcov
   write.table(vcv_full,
               file = paste0("../results/var-covar/removal/",
                             s,
@@ -127,11 +132,19 @@ write.table(rem_coef,
             sep = ",",
             row.names = FALSE)
 
+save(rem_vcv_best, file = "../results/var-covar/rem_vcv_best.rda")
+save(rem_vcv_full, file = "../results/var-covar/rem_vcv_full.rda")
+
 ####### Distance Model Selection ##################
 
 species <- substr(list.files(path = "data/distance"), 
                   start = 1, 
                   stop = 4)
+
+dis_vcv_best <- vector(mode = "list", length = length(species))
+dis_vcv_full <- vector(mode = "list", length = length(species))
+names(dis_vcv_best) <- species
+names(dis_vcv_full) <- species
 
 dist_coef <- data.frame(Species = species,
                         n = NA, 
@@ -160,7 +173,7 @@ for (s in species)
   model <- which(bic == min_bic)
   dist_coef[which(dist_coef$Species == s), "best_model"] <- model
   
-  vcv_best <- distance_list[[model]]$vcov
+  vcv_best <- dis_vcv_best[[s]] <- distance_list[[model]]$vcov
   write.table(vcv_best,
               file = paste0("../results/var-covar/distance/",
                             s,
@@ -199,7 +212,7 @@ for (s in species)
   dist_coef[which(dist_coef$Species == s),"forest_full"] = coef_full[3]
   dist_coef[which(dist_coef$Species == s),"roadforest_full"] = coef_full[4]
   
-  vcv_full <- distance_list[[5]]$vcov
+  vcv_full <- dis_vcv_full[[s]] <- distance_list[[5]]$vcov
   write.table(vcv_full,
               file = paste0("../results/var-covar/distance/",
                             s,
@@ -211,3 +224,6 @@ write.table(dist_coef,
             file = "../results/coefficients/distance.csv",
             sep = ",",
             row.names = FALSE)
+
+save(dis_vcv_best, file = "../results/var-covar/dis_vcv_best.rda")
+save(dis_vcv_full, file = "../results/var-covar/dis_vcv_full.rda")
