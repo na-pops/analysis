@@ -3,12 +3,9 @@
 # NA-POPS: analysis
 # 5-napops-quantitative-summary.R
 # Created January 2021
-# Last Updated February 2021
+# Last Updated March 2021
 
 ####### Import Libraries and External Files #######
-
-library(sf)
-library(bbsBayes)
 
 source("../utilities/get-data.R")
 source("../utilities/order-taxo.R")
@@ -62,6 +59,9 @@ summary_stats[["total_projects"]] <- nrow(project_df)
 
 ####### Number of Species & Species Table #########
 
+dis <- dis[!duplicated(dis$Species), ]
+rem <- rem[!duplicated(rem$Species), ]
+
 codes <- union(rem$Species, dis$Species)
 codes <- codes[match(ibp$SPEC, codes)]
 codes <- codes[!is.na(codes)]
@@ -81,24 +81,6 @@ species_table <- data.frame(Code = codes,
                             distance = in_distance)
 
 summary_stats[["n_species"]] <- nrow(species_table)
-
-####### Number of States/Provinces ################
-
-# coords <- do.call(rbind, project_samples)[, c("Latitude", "Longitude")]
-# coords <- coords[!is.na(coords$Latitude), ]
-# coords <- coords[!is.na(coords$Longitude), ]
-# 
-# coords <- st_as_sf(coords,coords = c("Longitude","Latitude"), crs = 4326)
-# state = sf::read_sf(dsn = system.file("maps",
-#                                       package="bbsBayes"),
-#                     layer = "BBS_ProvState_strata")
-# state <- state %>% st_transform(st_crs(coords))
-# 
-# counts_state <- st_intersects(state, coords)
-# cs_df <- data.frame(State = state$ST_12,
-#                     Counts = lengths(counts_state))
-# 
-# summary_stats[["n_states"]] <- nrow(cs_df[which(cs_df$Counts > 0), ])
 
 ####### Output Summary Statistics and Tables ######
 
