@@ -143,23 +143,23 @@ for (s in species)
   for (m in 1:n_dis_models)
   {
     coef <- coef(distance_list[[m]])
-    if (model == 1) {
+    if (m == 1) {
       dist_coef[which(dist_coef$Species == s & dist_coef$model == m),"intercept"] = coef[1]
     }
-    if (model == 2) {
+    if (m == 2) {
       dist_coef[which(dist_coef$Species == s & dist_coef$model == m),"intercept"] = coef[1]
       dist_coef[which(dist_coef$Species == s & dist_coef$model == m),"road"] = coef[2]
     }
-    if (model == 3) {
+    if (m == 3) {
       dist_coef[which(dist_coef$Species == s & dist_coef$model == m),"intercept"] = coef[1]
       dist_coef[which(dist_coef$Species == s & dist_coef$model == m),"forest"] = coef[2]
     }
-    if (model == 4) {
+    if (m == 4) {
       dist_coef[which(dist_coef$Species == s & dist_coef$model == m),"intercept"] = coef[1]
       dist_coef[which(dist_coef$Species == s & dist_coef$model == m),"road"] = coef[2]
       dist_coef[which(dist_coef$Species == s & dist_coef$model == m),"forest"] = coef[3]
     }
-    if (model == 5) {
+    if (m == 5) {
       dist_coef[which(dist_coef$Species == s & dist_coef$model == m),"intercept"] = coef[1]
       dist_coef[which(dist_coef$Species == s & dist_coef$model == m),"road"] = coef[2]
       dist_coef[which(dist_coef$Species == s & dist_coef$model == m),"forest"] = coef[3]
