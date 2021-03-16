@@ -1,7 +1,7 @@
 ####### Script Information ########################
 # Brandon P.M. Edwards
 # NA-POPS: analysis
-# 4-extract-coefficients.R
+# 4-extract-coefficients-bic.R
 # Created November 2020
 # Last Updated March 2021
 
@@ -44,12 +44,22 @@ for (m in 1:n_rem_models)
   rem_vcv_list[[m]] <- sp_list
 }
 
+rem_bic <- vector(mode = "list", length = length(species))
+names(rem_bic) <- species
 
 for (s in species)
 {
   load(file = paste0("data/removal/", s, ".rda"))
   rem_coef[which(rem_coef$Species == s), "n"] <- nrow(removal_list[[1]]$Y)
-  rem_coef[which(rem_coef$Species == s), "bic"] <- bic_multi(x = removal_list)
+  
+  bic <- bic_multi(x = removal_list)
+  rem_coef[which(rem_coef$Species == s), "bic"] <- bic
+  
+  bic_df <- data.frame(Model = seq(1, n_rem_models),
+                       BIC = bic)
+  bic_df <- bic_df[order(bic_df$BIC), ]
+  bic_df$Delta_BIC <- bic_df$BIC - bic_df$BIC[1]
+  rem_bic[[s]] <- bic_df
   
   for (m in 1:n_rem_models)
   {
@@ -110,6 +120,7 @@ write.table(rem_coef,
             row.names = FALSE)
 
 save(rem_vcv_list, file = "../results/var-covar/rem_vcv_list.rda")
+save(rem_bic, file = "../results/bic/rem_bic.rda")
 
 ####### Distance Model Selection ##################
 
@@ -134,11 +145,22 @@ for (m in 1:n_dis_models)
   dis_vcv_list[[m]] <- sp_list
 }
 
+dis_bic <- vector(mode = "list", length = length(species))
+names(dis_bic) <- species
+
 for (s in species)
 {
   load(file = paste0("data/distance/", s, ".rda"))
   dist_coef[which(dist_coef$Species == s), "n"] <- nrow(distance_list[[1]]$Y)
-  dist_coef[which(dist_coef$Species == s), "bic"] <- bic_multi(x = distance_list)
+  
+  bic <- bic_multi(x = distance_list)
+  dist_coef[which(dist_coef$Species == s), "bic"] <- bic
+  
+  bic_df <- data.frame(Model = seq(1, n_dis_models),
+                       BIC = bic)
+  bic_df <- bic_df[order(bic_df$BIC), ]
+  bic_df$Delta_BIC <- bic_df$BIC - bic_df$BIC[1]
+  dis_bic[[s]] <- bic_df
   
   for (m in 1:n_dis_models)
   {
@@ -176,3 +198,4 @@ write.table(dist_coef,
             row.names = FALSE)
 
 save(dis_vcv_list, file = "../results/var-covar/dis_vcv_list.rda")
+save(dis_bic, file = "../results/bic/dis_bic.rda")
