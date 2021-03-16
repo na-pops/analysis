@@ -85,7 +85,7 @@ for (sp in rem$Species)
       id <- c(seq_along(coefficients), zeros_indices + 0.5)
       coef_zeros <- coef_zeros[order(id)]    
     }else
-    {5++
+    {
       coef_zeros <- coefficients
     }
     
