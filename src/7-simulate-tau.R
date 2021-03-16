@@ -199,11 +199,12 @@ foreach (i = 1:max(dis$model), .packages = 'MASS') %dopar%
                                          sim_data$tau_97.5 ^ 2)))
   
   ####### Save Results ############################ 
-  assign(paste0("tau_", i), sim_data)
-  obj <-  eval(parse(text = paste0("tau_", i)))
-  save(x = obj,
+  var_name <- paste0("tau_", i)
+  assign(var_name, sim_data)
+  #obj <-  eval(parse(text = paste0("tau_", i)))
+  save(list = var_name,
        file = paste0("../results/simulations/tau/",
-                     paste0("tau_", i),
+                     var_name,
                      ".rda"))
 }
 
