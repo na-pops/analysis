@@ -79,6 +79,11 @@ if (length(to_remove > 0))
   covars <- covars[-c(to_remove), ]  
 }
 
+# Save which sample IDs (and therefore which covariates) were used during removal modelling
+rem_covars_used <- covars[, c("Sample_ID", "JD", "JD2", "TSSR", "TSSR2")]
+rem_covars_used <- rem_covars_used[!duplicated(rem_covars_used$Sample_ID), ]
+save(rem_covars_used, file = "data/rem_covars_used.rda")
+
 # Build matrices by species
 species_all <- sort(as.character(unique(counts$Species)))
 landbirds <- na_sp_list[which(na_sp_list$LANDBIRD == "TRUE"), "SPEC"]

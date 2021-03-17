@@ -80,6 +80,11 @@ counts <- counts[-c(to_remove), ]
 design <- design[-c(to_remove), ]
 covars <- covars[-c(to_remove), ]
 
+# Save which sample IDs (and therefore which covariates) were used during distance modelling
+dis_covars_used <- covars[, c("Sample_ID", "ForestOnly_5x5", "roadside")]
+dis_covars_used <- dis_covars_used[!duplicated(dis_covars_used$Sample_ID), ]
+save(dis_covars_used, file = "data/dis_covars_used.rda")
+
 # Build matrices by species
 species_all <- sort(as.character(unique(counts$Species)))
 landbirds <- na_sp_list[which(na_sp_list$LANDBIRD == "TRUE"), "SPEC"]
