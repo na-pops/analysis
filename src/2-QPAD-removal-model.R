@@ -3,7 +3,7 @@
 # NA-POPS: analysis
 # 2-QPAD-removal-model.R
 # Created August 2020
-# Last Updated January 2021
+# Last Updated March 2021
 
 ####### Import Libraries and External Files #######
 
@@ -25,12 +25,13 @@ na_sp_list <- read.csv("../utilities/IBP-Alpha-Codes20.csv")
 covariates_reduced <- temporal_covariates[which(!is.na(temporal_covariates$JD)), ]
 covariates_reduced <- covariates_reduced[which(!is.na(covariates_reduced$TSSR)), ]
 
+max_bands <- ncol(time_design) - 2
 count_names <- c("Sample_ID", "Species", "Time_Method",
-                 paste0(rep("Int", times = 10), 1:10))
+                 paste0(rep("Int", times = max_bands), 1:max_bands))
 names(time_count_matrix) <- count_names
 
 design_names <- c("Time_Method", "Max_Duration",
-                 paste0(rep("Interval", times = 10), 1:10))
+                 paste0(rep("Interval", times = max_bands), 1:max_bands))
 names(time_design) <- design_names
 
 # Join data

@@ -3,7 +3,7 @@
 # NA-POPS: analysis
 # 3-QPAD-distance-model.R
 # Created August 2020
-# Last Updated January 2021
+# Last Updated March 2021
 
 ####### Import Libraries and External Files #######
 
@@ -36,12 +36,13 @@ dist_design <- dist_design[-which(dist_design$Method == "I"), ]
 # WARNING, UGLY HARD CODED MESS! FIX PRIOR TO FULL PUBLICATION :)
 dist_count_matrix$"7" <- rep(0, nrow(dist_count_matrix))
 
+max_bands <- ncol(dist_design) - 2
 count_names <- c("Sample_ID", "Species", "Distance_Method",
-                 paste0(rep("Int", times = 12), 1:12))
+                 paste0(rep("Int", times = max_bands), 1:max_bands))
 names(dist_count_matrix) <- count_names
 
 design_names <- c("Distance_Method", "Max_Distance",
-                  paste0(rep("Interval", times = 12), 1:12))
+                  paste0(rep("Interval", times = max_bands), 1:max_bands))
 names(dist_design) <- design_names
 
 # Join data
