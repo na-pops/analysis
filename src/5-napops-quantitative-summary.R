@@ -19,6 +19,8 @@ summary_stats <- list()
 
 load(file = here::here("data/counts.rda"))
 load(file = here::here("data/samples.rda"))
+load(file = here::here("data/dis_covars_used.rda"))
+load(file = here::here("data/rem_covars_used.rda"))
 
 project_list <- read.table(here::here("../utilities/proj-list"))[,1]
 ibp <- read.csv("../utilities/IBP-Alpha-Codes20.csv")
@@ -82,6 +84,40 @@ species_table <- data.frame(Code = codes,
 
 summary_stats[["n_species"]] <- nrow(species_table)
 
+####### Species-specific Summary (Distance) #######
+
+dis_species <- unique(dis$Species)
+dis_species_summary <- vector(mode = "list", length = length(dis_species))
+names(dis_species_summary) <- dis_species
+
+for (sp in dis_species)
+{
+  temp <- project_counts[which(project_counts$Species == sp), ]
+  temp <- temp[!duplicated(temp$Sample_ID), ]
+  temp <- merge(x = temp, y = dis_covars_used, by = "Sample_ID")
+  temp <- merge(x = temp, y = project_samples[, c("Sample_ID", "Latitude", "Longitude")],
+                by = "Sample_ID")
+  dis_species_summary[[sp]] <- temp[, c("Sample_ID", "ForestOnly_5x5", "roadside",
+                                        "Latitude", "Longitude")]
+}
+
+####### Species-specific Summary (Removal) ########
+
+rem_species <- unique(rem$Species)
+rem_species_summary <- vector(mode = "list", length = length(rem_species))
+names(rem_species_summary) <- rem_species
+
+for (sp in rem_species)
+{
+  temp <- project_counts[which(project_counts$Species == sp), ]
+  temp <- temp[!duplicated(temp$Sample_ID), ]
+  temp <- merge(x = temp, y = rem_covars_used, by = "Sample_ID")
+  temp <- merge(x = temp, y = project_samples[, c("Sample_ID", "Latitude", "Longitude")],
+                by = "Sample_ID")
+  rem_species_summary[[sp]] <- temp[, c("Sample_ID", "JD", "JD2", "TSSR", "TSSR2",
+                                        "Latitude", "Longitude")]
+}
+
 ####### Output Summary Statistics and Tables ######
 
 write.table(x = project_df, file = "../results/quant-summary/project_list.csv",
@@ -91,3 +127,6 @@ write.table(x = species_table, file = "../results/quant-summary/species_table.cs
             sep = ",", row.names = FALSE)
 
 save(summary_stats, file = "../results/quant-summary/summary_statistics.rda")
+
+save(dis_species_summary, file = "../results/quant-summary/dis_species_summary.rda")
+save(rem_species_summary, file = "../results/quant-summary/rem_species_summary.rda")
