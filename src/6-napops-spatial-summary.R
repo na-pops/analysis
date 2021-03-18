@@ -7,7 +7,6 @@
 
 ####### Import Libraries and External Files #######
 
-library(bbsBayes)
 library(sf)
 library(tidyverse)
 
@@ -19,14 +18,11 @@ load(file = "data/samples.rda")
 load("../results/quant-summary/dis_species_summary.rda")
 load("../results/quant-summary/rem_species_summary.rda")
 
-bcr <- read_sf(dsn = system.file("maps",
-                                   package="bbsBayes"),
+bcr <- read_sf("../utilities/shp/bcr",
                  layer = "BBS_BCR_strata")
-strat <- read_sf(dsn = system.file("maps",
-                                      package="bbsBayes"),
+strat <- read_sf("../utilities/shp/bcr_state",
                     layer = "BBS_usgs_strata")
-state <- read_sf(dsn = system.file("maps",
-                                      package="bbsBayes"),
+state <- read_sf("../utilities/shp/state",
                     layer = "BBS_ProvState_strata")
 
 ####### Analysis by BCR x State/Prov ##############
