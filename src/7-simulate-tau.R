@@ -14,10 +14,6 @@ library(doParallel)
 source("../utilities/order-taxo.R")
 source("../utilities/rm-non-sp.R")
 
-####### Set Constants #############################
-
-n_cores <- 3
-
 ####### Read Data #################################
 
 dis <- rm_non_sp(read.csv("../results/coefficients/distance.csv"))
@@ -26,6 +22,10 @@ family <- read.csv("../utilities/NACC_list_species.csv")[, c("common_name",
 ibp <- read.csv("../utilities/IBP-Alpha-Codes20.csv")[, c("SPEC",
                                                           "COMMONNAME")]
 load("../results/var-covar/dis_vcv_list.rda")
+
+####### Set Constants #############################
+
+n_cores <- max(dis$model)
 
 ####### Simulate tau ##############################
 

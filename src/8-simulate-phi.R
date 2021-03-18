@@ -146,7 +146,5 @@ sim_data$p <- 1 - exp(-(sim_data$Time * sim_data$phi))
 sim_data$p_2.5 <- 1 - exp(-(sim_data$Time * sim_data$phi_2.5))
 sim_data$p_97.5 <- 1 - exp(-(sim_data$Time * sim_data$phi_97.5))
 
-# Save in results, and a local copy in the na-pops dashboard repo
 phi_df <- sim_data
 save(x = phi_df, file = "../results/simulations/phi.rda")
-save(x = phi_df, file = "../napops-dashboard/data/phi.rda")
