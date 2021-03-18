@@ -14,9 +14,9 @@ library(foreach)
 
 ####### Read Data #################################
 
-load(file = here::here("data/dist_count_matrix.rda"))
-load(file = here::here("data/landcover_covariates.rda"))
-load(file = here::here("data/dist_design.rda"))
+load(file = "data/dist_count_matrix.rda")
+load(file = "data/landcover_covariates.rda")
+load(file = "data/dist_design.rda")
 na_sp_list <- read.csv("../utilities/IBP-Alpha-Codes20.csv")
 
 ####### Data Wrangling ############################

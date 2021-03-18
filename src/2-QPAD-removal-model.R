@@ -14,9 +14,9 @@ library(foreach)
 
 ####### Read Data #################################
 
-load(file = here::here("data/time_count_matrix.rda"))
-load(file = here::here("data/temporal_covariates.rda"))
-load(file = here::here("data/time_design.rda"))
+load(file = "data/time_count_matrix.rda")
+load(file = "data/temporal_covariates.rda")
+load(file = "data/time_design.rda")
 na_sp_list <- read.csv("../utilities/IBP-Alpha-Codes20.csv")
 
 ####### Data Wrangling ############################

@@ -13,7 +13,7 @@ library(tidyverse)
 
 ####### Read Data #################################
 
-load(file = here::here("data/samples.rda"))
+load(file = "data/samples.rda")
 
 # Required from 5-napops-quantitative-summary.R
 load("../results/quant-summary/dis_species_summary.rda")

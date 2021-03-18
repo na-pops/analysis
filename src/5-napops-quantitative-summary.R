@@ -17,12 +17,12 @@ summary_stats <- list()
 
 ####### Read Data #################################
 
-load(file = here::here("data/counts.rda"))
-load(file = here::here("data/samples.rda"))
-load(file = here::here("data/dis_covars_used.rda"))
-load(file = here::here("data/rem_covars_used.rda"))
+load(file = "data/counts.rda")
+load(file = "data/samples.rda")
+load(file = "data/dis_covars_used.rda")
+load(file = "data/rem_covars_used.rda")
 
-project_list <- read.table(here::here("../utilities/proj-list"))[,1]
+project_list <- read.table("../utilities/proj-list")[,1]
 ibp <- read.csv("../utilities/IBP-Alpha-Codes20.csv")
 dis <- rm_non_sp(order_taxo(read.csv("../results/coefficients/distance.csv")))
 rem <- rm_non_sp(order_taxo(read.csv("../results/coefficients/removal.csv")))
