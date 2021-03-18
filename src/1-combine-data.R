@@ -7,7 +7,6 @@
 
 ####### Import Libraries and External Files #######
 
-library(here)
 library(reshape2)
 
 source("../utilities/get-data.R")
@@ -15,7 +14,7 @@ source("../utilities/get-data.R")
 ####### Read Data #################################
 
 # Get project names
-project_list <- read.table(here::here("../utilities/proj-list"))
+project_list <- read.table("../utilities/proj-list")
 n_proj <- nrow(project_list)
 
 # Create combined count data frame
@@ -78,13 +77,13 @@ for (i in 1:n_proj)
   data_dir <- paste0("../covariates/landcover/project-",
                      p,
                      ".csv")
-  landcover_covariates[[i]] <- read.csv(here::here(data_dir))
+  landcover_covariates[[i]] <- read.csv(data_dir)
   
   # Temporal covariates
   data_dir <- paste0("../covariates/temporal/project-",
                      p,
                      ".csv")
-  temporal_covariates[[i]] <- read.csv(here::here(data_dir))
+  temporal_covariates[[i]] <- read.csv(data_dir)
 }
 landcover_covariates <- do.call(rbind, landcover_covariates)
 temporal_covariates <- do.call(rbind, temporal_covariates)
@@ -103,11 +102,11 @@ dist_design <- dcast(dist, Method + Max_Distance ~ Level, value.var = "End_Dista
 
 ####### Output Data ###############################
 message("7/7 Now saving all data.\n")
-save(project_counts, file = here::here("data/counts.rda"))
-save(project_samples, file = here::here("data/samples.rda"))
-save(time_count_matrix, file = here::here("data/time_count_matrix.rda"))
-save(dist_count_matrix, file = here::here("data/dist_count_matrix.rda"))
-save(landcover_covariates, file = here::here("data/landcover_covariates.rda"))
-save(temporal_covariates, file = here::here("data/temporal_covariates.rda"))
-save(time_design, file = here::here("data/time_design.rda"))
-save(dist_design, file = here::here("data/dist_design.rda"))
+save(project_counts, file = "data/counts.rda")
+save(project_samples, file = "data/samples.rda")
+save(time_count_matrix, file = "data/time_count_matrix.rda")
+save(dist_count_matrix, file = "data/dist_count_matrix.rda")
+save(landcover_covariates, file = "data/landcover_covariates.rda")
+save(temporal_covariates, file = "data/temporal_covariates.rda")
+save(time_design, file = "data/time_design.rda")
+save(dist_design, file = "data/dist_design.rda")
