@@ -33,9 +33,6 @@ covariates_reduced$roadside <- ifelse(covariates_reduced$roaddist < 30, 1, 0)
 dist_count_matrix <- dist_count_matrix[-which(dist_count_matrix$Distance_Method == "I"), ]
 dist_design <- dist_design[-which(dist_design$Method == "I"), ]
 
-# WARNING, UGLY HARD CODED MESS! FIX PRIOR TO FULL PUBLICATION :)
-dist_count_matrix$"7" <- rep(0, nrow(dist_count_matrix))
-
 max_bands <- ncol(dist_design) - 2
 count_names <- c("Sample_ID", "Species", "Distance_Method",
                  paste0(rep("Int", times = max_bands), 1:max_bands))
