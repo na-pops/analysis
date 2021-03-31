@@ -14,9 +14,9 @@ library(foreach)
 
 ####### Read Data #################################
 
-load(file = "data/time_count_matrix.rda")
-load(file = "data/temporal_covariates.rda")
-load(file = "data/time_design.rda")
+load(file = "data/combined/time_count_matrix.rda")
+load(file = "data/combined/temporal_covariates.rda")
+load(file = "data/combined/time_design.rda")
 na_sp_list <- read.csv("../utilities/IBP-Alpha-Codes20.csv")
 
 ####### Data Wrangling ############################
@@ -24,6 +24,7 @@ na_sp_list <- read.csv("../utilities/IBP-Alpha-Codes20.csv")
 # Drop rows that have NA in JD or TSSR
 covariates_reduced <- temporal_covariates[which(!is.na(temporal_covariates$JD)), ]
 covariates_reduced <- covariates_reduced[which(!is.na(covariates_reduced$TSSR)), ]
+covariates_reduced <- covariates_reduced[which(!is.na(covariates_reduced$BCR)), ]
 
 max_bands <- ncol(time_design) - 2
 count_names <- c("Sample_ID", "Species", "Time_Method",
@@ -80,10 +81,20 @@ if (length(to_remove > 0))
   covars <- covars[-c(to_remove), ]  
 }
 
+to_remove <- which(is.na(covars$BCR))
+if (length(to_remove > 0))
+{
+  counts <- counts[-c(to_remove), ]
+  design <- design[-c(to_remove), ]
+  covars <- covars[-c(to_remove), ]  
+}
+
+covars$BCR <- as.factor(covars$BCR)
+
 # Save which sample IDs (and therefore which covariates) were used during removal modelling
-rem_covars_used <- covars[, c("Sample_ID", "JD", "JD2", "TSSR", "TSSR2")]
+rem_covars_used <- covars[, c("Sample_ID", "JD", "JD2", "TSSR", "TSSR2", "BCR")]
 rem_covars_used <- rem_covars_used[!duplicated(rem_covars_used$Sample_ID), ]
-save(rem_covars_used, file = "data/rem_covars_used.rda")
+save(rem_covars_used, file = "data/combined/rem_covars_used.rda")
 
 # Build matrices by species
 species_all <- sort(as.character(unique(counts$Species)))
@@ -92,13 +103,13 @@ species <- species_all[which(species_all %in% landbirds)]
 
 for (s in species)
 {
-  if (nrow(counts[counts$Species == s, ]) >= 75)
+  if (nrow(counts[counts$Species == s, ]) >= 300)
   {
     assign(paste0("Y_",s), as.matrix(counts[counts$Species==s, col_names]))
     assign(paste0("D_",s), as.matrix(design[design$Species==s, col_names]))
     assign(paste0("C_",s), subset(covars,
                                   Species==s,
-                                  select = c(14:17)))
+                                  select = c(14:18)))
   }else
   {
     species <- species[!(species %in% s)]
@@ -129,7 +140,10 @@ foreach(sp = names(input_list), .packages = 'detect') %dopar%
     m7 = cmulti(x$Y | x$D ~ x$C$TSSR + x$C$TSSR2 + x$C$JD, type="rem")
     m8 = cmulti(x$Y | x$D ~ x$C$TSSR + x$C$JD + x$C$JD2, type="rem")
     m9 = cmulti(x$Y | x$D ~ x$C$TSSR + x$C$TSSR2 + x$C$JD + x$C$JD2, type="rem")
-    removal_list <- list(m1, m2, m3, m4, m5, m6, m7, m8, m9)
+    m10 = cmulti(x$Y | x$D ~ x$C$JD + x$C$BCR , type="rem")
+    m11 = cmulti(x$Y | x$D ~ x$C$JD * x$C$BCR , type="rem")
+    m12 = cmulti(x$Y | x$D ~ x$C$JD + x$C$JD2 + x$C$BCR, type = "rem")
+    removal_list <- list(m1, m2, m3, m4, m5, m6, m7, m8, m9, m10, m11, m12)
     save(removal_list, file = paste0("data/removal/", sp, ".rda"))    
   }
 
