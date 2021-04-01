@@ -89,8 +89,6 @@ if (length(to_remove > 0))
   covars <- covars[-c(to_remove), ]  
 }
 
-covars$BCR <- as.factor(covars$BCR)
-
 # Save which sample IDs (and therefore which covariates) were used during removal modelling
 rem_covars_used <- covars[, c("Sample_ID", "JD", "JD2", "TSSR", "TSSR2", "BCR")]
 rem_covars_used <- rem_covars_used[!duplicated(rem_covars_used$Sample_ID), ]
@@ -103,7 +101,7 @@ species <- species_all[which(species_all %in% landbirds)]
 
 for (s in species)
 {
-  if (nrow(counts[counts$Species == s, ]) >= 300)
+  if (nrow(counts[counts$Species == s, ]) >= 200)
   {
     assign(paste0("Y_",s), as.matrix(counts[counts$Species==s, col_names]))
     assign(paste0("D_",s), as.matrix(design[design$Species==s, col_names]))
@@ -131,6 +129,7 @@ registerDoParallel(cluster)
 foreach(sp = names(input_list), .packages = 'detect') %dopar%
   {
     x <- input_list[[sp]]
+    x$C$BCR <- as.factor(x$C$BCR)
     m1 = cmulti(x$Y | x$D ~ 1, type="rem")
     m2 = cmulti(x$Y | x$D ~ 1 + x$C$TSSR, type="rem")
     m3 = cmulti(x$Y | x$D ~ 1 + x$C$JD, type="rem")
