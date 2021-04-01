@@ -14,9 +14,9 @@ library(foreach)
 
 ####### Read Data #################################
 
-load(file = "data/dist_count_matrix.rda")
-load(file = "data/landcover_covariates.rda")
-load(file = "data/dist_design.rda")
+load(file = "data/combined/dist_count_matrix.rda")
+load(file = "data/combined/landcover_covariates.rda")
+load(file = "data/combined/dist_design.rda")
 na_sp_list <- read.csv("../utilities/IBP-Alpha-Codes20.csv")
 
 ####### Data Wrangling ############################
@@ -81,7 +81,7 @@ covars <- covars[-c(to_remove), ]
 # Save which sample IDs (and therefore which covariates) were used during distance modelling
 dis_covars_used <- covars[, c("Sample_ID", "ForestOnly_5x5", "roadside")]
 dis_covars_used <- dis_covars_used[!duplicated(dis_covars_used$Sample_ID), ]
-save(dis_covars_used, file = "data/dis_covars_used.rda")
+save(dis_covars_used, file = "data/combined/dis_covars_used.rda")
 
 # Build matrices by species
 species_all <- sort(as.character(unique(counts$Species)))
@@ -90,7 +90,7 @@ species <- species_all[which(species_all %in% landbirds)]
 
 for (s in species)
 {
-  if (nrow(counts[counts$Species == s, ]) >= 50)
+  if (nrow(counts[counts$Species == s, ]) >= 75)
   {
     assign(paste0("Y_",s), as.matrix(counts[counts$Species==s, col_names]))
     assign(paste0("D_",s), as.matrix(design[design$Species==s, col_names]))
