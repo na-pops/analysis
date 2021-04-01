@@ -101,7 +101,7 @@ species <- species_all[which(species_all %in% landbirds)]
 
 for (s in species)
 {
-  if (nrow(counts[counts$Species == s, ]) >= 200)
+  if (nrow(counts[counts$Species == s, ]) >= 75)
   {
     assign(paste0("Y_",s), as.matrix(counts[counts$Species==s, col_names]))
     assign(paste0("D_",s), as.matrix(design[design$Species==s, col_names]))
