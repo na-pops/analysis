@@ -3,7 +3,7 @@
 # NA-POPS: analysis
 # 2-QPAD-removal-model.R
 # Created August 2020
-# Last Updated March 2021
+# Last Updated April 2021
 
 ####### Import Libraries and External Files #######
 
@@ -125,25 +125,29 @@ for (s in species)
 
 ########### Modelling #############################
 
-cluster <- makeCluster(12, type = "PSOCK")
+cluster <- makeCluster(30, type = "PSOCK")
 registerDoParallel(cluster)
 
 foreach(sp = names(input_list), .packages = 'detect') %dopar%
   {
     x <- input_list[[sp]]
     m1 = cmulti(x$Y | x$D ~ 1, type="rem")
-    m2 = cmulti(x$Y | x$D ~ x$C$TSSR, type="rem")
-    m3 = cmulti(x$Y | x$D ~ x$C$JD, type="rem")
-    m4 = cmulti(x$Y | x$D ~ x$C$TSSR + x$C$TSSR2, type = "rem")
-    m5 = cmulti(x$Y | x$D ~ x$C$JD + x$C$JD2, type = "rem")
-    m6 = cmulti(x$Y | x$D ~ x$C$TSSR + x$C$JD, type="rem")
-    m7 = cmulti(x$Y | x$D ~ x$C$TSSR + x$C$TSSR2 + x$C$JD, type="rem")
-    m8 = cmulti(x$Y | x$D ~ x$C$TSSR + x$C$JD + x$C$JD2, type="rem")
-    m9 = cmulti(x$Y | x$D ~ x$C$TSSR + x$C$TSSR2 + x$C$JD + x$C$JD2, type="rem")
-    m10 = cmulti(x$Y | x$D ~ x$C$JD + x$C$BCR , type="rem")
-    m11 = cmulti(x$Y | x$D ~ x$C$JD * x$C$BCR , type="rem")
-    m12 = cmulti(x$Y | x$D ~ x$C$JD + x$C$JD2 + x$C$BCR, type = "rem")
-    removal_list <- list(m1, m2, m3, m4, m5, m6, m7, m8, m9, m10, m11, m12)
+    m2 = cmulti(x$Y | x$D ~ 1 + x$C$TSSR, type="rem")
+    m3 = cmulti(x$Y | x$D ~ 1 + x$C$JD, type="rem")
+    m4 = cmulti(x$Y | x$D ~ 1 + x$C$TSSR + x$C$TSSR2, type = "rem")
+    m5 = cmulti(x$Y | x$D ~ 1 + x$C$JD + x$C$JD2, type = "rem")
+    m6 = cmulti(x$Y | x$D ~ 1 + x$C$TSSR + x$C$JD, type="rem")
+    m7 = cmulti(x$Y | x$D ~ 1 + x$C$TSSR + x$C$TSSR2 + x$C$JD, type="rem")
+    m8 = cmulti(x$Y | x$D ~ 1 + x$C$TSSR + x$C$JD + x$C$JD2, type="rem")
+    m9 = cmulti(x$Y | x$D ~ 1 + x$C$TSSR + x$C$TSSR2 + x$C$JD + x$C$JD2, type="rem")
+    m10 = cmulti(x$Y | x$D ~ 1 + x$C$BCR, type="rem")
+    m11 = cmulti(x$Y | x$D ~ 1 + x$C$JD + x$C$BCR + x$C$BCR:x$C$JD, type="rem")
+    m12 = cmulti(x$Y | x$D ~ 1 + x$C$JD + x$C$BCR + x$C$BCR:x$C$JD + x$C$JD2 + x$C$BCR:x$C$JD2, type = "rem")
+    m13 = cmulti(x$Y | x$D ~ 1 + x$C$TSSR + x$C$JD + x$C$BCR + x$C$BCR:x$C$JD, type="rem")
+    m14 = cmulti(x$Y | x$D ~ 1 + x$C$TSSR + x$C$TSSR2 + x$C$JD + x$C$BCR + x$C$BCR:x$C$JD, type="rem")
+    m15 = cmulti(x$Y | x$D ~ 1 + x$C$TSSR + x$C$JD + x$C$BCR + x$C$BCR:x$C$JD + x$C$JD2 + x$C$BCR:x$C$JD2, type="rem")
+    m16 = cmulti(x$Y | x$D ~ 1 + x$C$TSSR + x$C$TSSR2 + x$C$JD + x$C$BCR + x$C$BCR:x$C$JD + x$C$JD2 + x$C$BCR:x$C$JD2, type="rem")
+    removal_list <- list(m1, m2, m3, m4, m5, m6, m7, m8, m9, m10, m11, m12, m13, m14, m15, m16)
     save(removal_list, file = paste0("data/removal/", sp, ".rda"))    
   }
 
