@@ -123,6 +123,8 @@ for (s in species)
 
 ########### Modelling #############################
 
+message(paste0("Beginning parallel modelling for ", length(species), " species.\n"))
+
 cluster <- makeCluster(30, type = "PSOCK")
 registerDoParallel(cluster)
 

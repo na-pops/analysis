@@ -3,7 +3,7 @@
 # NA-POPS: analysis
 # 3-QPAD-distance-model.R
 # Created August 2020
-# Last Updated March 2021
+# Last Updated April 2021
 
 ####### Import Libraries and External Files #######
 
@@ -111,6 +111,8 @@ for (s in species)
 }
 
 ########### Modelling #############################
+
+message(paste0("Beginning parallel modelling for ", length(species), " species.\n"))
 
 cluster <- makeCluster(30, type = "PSOCK")
 registerDoParallel(cluster)
