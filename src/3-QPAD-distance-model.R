@@ -112,7 +112,7 @@ for (s in species)
 
 ########### Modelling #############################
 
-cluster <- makeCluster(15, type = "PSOCK")
+cluster <- makeCluster(30, type = "PSOCK")
 registerDoParallel(cluster)
 
 foreach(sp = names(input_list), .packages = 'detect') %dopar%
