@@ -112,17 +112,17 @@ for (s in species)
 
 ########### Modelling #############################
 
-cluster <- makeCluster(12, type = "PSOCK")
+cluster <- makeCluster(15, type = "PSOCK")
 registerDoParallel(cluster)
 
 foreach(sp = names(input_list), .packages = 'detect') %dopar%
   {
     x <- input_list[[sp]]
     m1 = cmulti(x$Y | x$D ~ 1, type="dis")
-    m2 = cmulti(x$Y | x$D ~ x$C$roadside, type="dis")
-    m3 = cmulti(x$Y | x$D ~ x$C$ForestOnly_5x5, type="dis")
-    m4 = cmulti(x$Y | x$D ~ x$C$roadside + x$C$ForestOnly_5x5, type="dis")
-    m5 = cmulti(x$Y | x$D ~ x$C$roadside * x$C$ForestOnly_5x5, type="dis")
+    m2 = cmulti(x$Y | x$D ~ 1 + x$C$roadside, type="dis")
+    m3 = cmulti(x$Y | x$D ~ 1 + x$C$ForestOnly_5x5, type="dis")
+    m4 = cmulti(x$Y | x$D ~ 1 + x$C$roadside + x$C$ForestOnly_5x5, type="dis")
+    m5 = cmulti(x$Y | x$D ~ 1 + x$C$roadside + x$C$ForestOnly_5x5 + x$C$roadside:x$C$ForestOnly_5x5, type="dis")
     distance_list <- list(m1, m2, m3, m4, m5)
     save(distance_list, file = paste0("data/distance/", sp, ".rda"))    
   }
