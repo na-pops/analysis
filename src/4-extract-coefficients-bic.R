@@ -132,6 +132,12 @@ for (s in species)
       rem_coef[which(rem_coef$Species == s & rem_coef$model == m),"intercept"] = coef[1]
       rem_coef[which(rem_coef$Species == s & rem_coef$model == m),"jd"] = coef[2]
       
+      #' Because we are modelling the BCRs as factors, the lowest BCR will get input
+      #' into the model as the base factor, and we won't actually get a coefficient for
+      #' it. Thus, this line will extract all BCRs input into the model, then later on
+      #' we can add whichever one does not have a coefficient
+      all_bcr_used <- as.numeric(as.character(levels(removal_list[[m]]$model$`x$C$BCR`)))
+      
       #' First, get all the coefficients for the JD BCR interaction. Do this by
       #' finding which indices of the coefficient list have the string "JD:" in it,
       #' which only occur for the JD:BCR interactions. Then, get just those coefficients
@@ -146,6 +152,10 @@ for (s in species)
       bcr_used <- as.integer(sub(".*BCR", "", names(bcr_jd_coef_list)))
       bcr_jd_coef[which(bcr_jd_coef$Species == s & bcr_jd_coef$model == m),
                   bcr_used] = coef[bcr_jd_indices]
+      # Add a 0 for the base BCR, just so we can still track which BCRs were used
+      leftover <- setdiff(all_bcr_used, bcr_used)
+      bcr_jd_coef[which(bcr_jd_coef$Species == s & bcr_jd_coef$model == m),
+                  leftover] = 0
       
       #' Now we want all parameters that are JUST the BCR, but NOT the interaction terms.
       #' So, get the indices of all those which contain BCR in the name (which will initially
@@ -157,7 +167,9 @@ for (s in species)
       bcr_used <- as.integer(sub(".*BCR", "", names(bcr_coef_list)))
       bcr_coef[which(bcr_coef$Species == s & bcr_coef$model == m),
                bcr_used] = coef[bcr_indices]
-      
+      leftover <- setdiff(all_bcr_used, bcr_used)
+      bcr_coef[which(bcr_coef$Species == s & bcr_coef$model == m),
+               leftover] = 0
     }
     if (m == 11) {
       rem_coef[which(rem_coef$Species == s & rem_coef$model == m),"intercept"] = coef[1]
@@ -165,11 +177,16 @@ for (s in species)
       rem_coef[which(rem_coef$Species == s & rem_coef$model == m),"jd2"] = coef[3]
       
       #' Similar to above, but we first will get the JD2 interactions
+      all_bcr_used <- as.numeric(as.character(levels(removal_list[[m]]$model$`x$C$BCR`)))
+      
       bcr_jd2_indices <- which(grepl("JD2:", names(coef)))
       bcr_jd2_coef_list <- coef[bcr_jd2_indices]
       bcr_used <- as.integer(sub(".*BCR", "", names(bcr_jd2_coef_list)))
       bcr_jd2_coef[which(bcr_jd2_coef$Species == s & bcr_jd2_coef$model == m),
                    bcr_used] = coef[bcr_jd2_indices]
+      leftover <- setdiff(all_bcr_used, bcr_used)
+      bcr_jd2_coef[which(bcr_jd2_coef$Species == s & bcr_jd2_coef$model == m),
+                   leftover] = 0
       
       #' Now just JD interactions
       bcr_jd_indices <- which(grepl("JD:", names(coef)))
@@ -177,6 +194,9 @@ for (s in species)
       bcr_used <- as.integer(sub(".*BCR", "", names(bcr_jd_coef_list)))
       bcr_jd_coef[which(bcr_jd_coef$Species == s & bcr_jd_coef$model == m),
                   bcr_used] = coef[bcr_jd_indices]
+      leftover <- setdiff(all_bcr_used, bcr_used)
+      bcr_jd_coef[which(bcr_jd_coef$Species == s & bcr_jd_coef$model == m),
+                  leftover] = 0
       
       #' Now, we will do setdiff again, only instead we need to take the setdiff
       #' of the BCR set, and the union of the set of JD and JD2 indices
@@ -186,24 +206,35 @@ for (s in species)
       bcr_used <- as.integer(sub(".*BCR", "", names(bcr_coef_list)))
       bcr_coef[which(bcr_coef$Species == s & bcr_coef$model == m),
                bcr_used] = coef[bcr_indices]
+      leftover <- setdiff(all_bcr_used, bcr_used)
+      bcr_coef[which(bcr_coef$Species == s & bcr_coef$model == m),
+               leftover] = 0
     }
     if (m == 12) {
       rem_coef[which(rem_coef$Species == s & rem_coef$model == m),"intercept"] = coef[1]
       rem_coef[which(rem_coef$Species == s & rem_coef$model == m),"tssr"] = coef[2]
       rem_coef[which(rem_coef$Species == s & rem_coef$model == m),"jd"] = coef[3]
       
-      # See explanation of the following code above
+      # See explanation above of the following code 
+      all_bcr_used <- as.numeric(as.character(levels(removal_list[[m]]$model$`x$C$BCR`)))
+      
       bcr_jd_indices <- which(grepl("JD:", names(coef)))
       bcr_jd_coef_list <- coef[bcr_jd_indices]
       bcr_used <- as.integer(sub(".*BCR", "", names(bcr_jd_coef_list)))
       bcr_jd_coef[which(bcr_jd_coef$Species == s & bcr_jd_coef$model == m),
                   bcr_used] = coef[bcr_jd_indices]
+      leftover <- setdiff(all_bcr_used, bcr_used)
+      bcr_jd_coef[which(bcr_jd_coef$Species == s & bcr_jd_coef$model == m),
+                  leftover] = 0
       
       bcr_indices <- setdiff(which(grepl("BCR", names(coef))), bcr_jd_indices)
       bcr_coef_list <- coef[bcr_indices]
       bcr_used <- as.integer(sub(".*BCR", "", names(bcr_coef_list)))
       bcr_coef[which(bcr_coef$Species == s & bcr_coef$model == m),
                bcr_used] = coef[bcr_indices]
+      leftover <- setdiff(all_bcr_used, bcr_used)
+      bcr_coef[which(bcr_coef$Species == s & bcr_coef$model == m),
+               leftover] = 0
     }
     if (m == 13) {
       rem_coef[which(rem_coef$Species == s & rem_coef$model == m),"intercept"] = coef[1]
@@ -211,18 +242,26 @@ for (s in species)
       rem_coef[which(rem_coef$Species == s & rem_coef$model == m),"tssr2"] = coef[3]
       rem_coef[which(rem_coef$Species == s & rem_coef$model == m),"jd"] = coef[4]
       
-      # See explanation of the following code above
+      # See explanation above of the following code 
+      all_bcr_used <- as.numeric(as.character(levels(removal_list[[m]]$model$`x$C$BCR`)))
+      
       bcr_jd_indices <- which(grepl("JD:", names(coef)))
       bcr_jd_coef_list <- coef[bcr_jd_indices]
       bcr_used <- as.integer(sub(".*BCR", "", names(bcr_jd_coef_list)))
       bcr_jd_coef[which(bcr_jd_coef$Species == s & bcr_jd_coef$model == m),
                   bcr_used] = coef[bcr_jd_indices]
+      leftover <- setdiff(all_bcr_used, bcr_used)
+      bcr_jd_coef[which(bcr_jd_coef$Species == s & bcr_jd_coef$model == m),
+                  leftover] = 0
       
       bcr_indices <- setdiff(which(grepl("BCR", names(coef))), bcr_jd_indices)
       bcr_coef_list <- coef[bcr_indices]
       bcr_used <- as.integer(sub(".*BCR", "", names(bcr_coef_list)))
       bcr_coef[which(bcr_coef$Species == s & bcr_coef$model == m),
                bcr_used] = coef[bcr_indices]
+      leftover <- setdiff(all_bcr_used, bcr_used)
+      bcr_coef[which(bcr_coef$Species == s & bcr_coef$model == m),
+               leftover] = 0
     }
     if (m == 14) {
       rem_coef[which(rem_coef$Species == s & rem_coef$model == m),"intercept"] = coef[1]
@@ -231,17 +270,25 @@ for (s in species)
       rem_coef[which(rem_coef$Species == s & rem_coef$model == m),"jd2"] = coef[4]
       
       #' See above for explanation
+      all_bcr_used <- as.numeric(as.character(levels(removal_list[[m]]$model$`x$C$BCR`)))
+      
       bcr_jd2_indices <- which(grepl("JD2:", names(coef)))
       bcr_jd2_coef_list <- coef[bcr_jd2_indices]
       bcr_used <- as.integer(sub(".*BCR", "", names(bcr_jd2_coef_list)))
       bcr_jd2_coef[which(bcr_jd2_coef$Species == s & bcr_jd2_coef$model == m),
                    bcr_used] = coef[bcr_jd2_indices]
+      leftover <- setdiff(all_bcr_used, bcr_used)
+      bcr_jd2_coef[which(bcr_jd2_coef$Species == s & bcr_jd2_coef$model == m),
+                   leftover] = 0
       
       bcr_jd_indices <- which(grepl("JD:", names(coef)))
       bcr_jd_coef_list <- coef[bcr_jd_indices]
       bcr_used <- as.integer(sub(".*BCR", "", names(bcr_jd_coef_list)))
       bcr_jd_coef[which(bcr_jd_coef$Species == s & bcr_jd_coef$model == m),
                   bcr_used] = coef[bcr_jd_indices]
+      leftover <- setdiff(all_bcr_used, bcr_used)
+      bcr_jd_coef[which(bcr_jd_coef$Species == s & bcr_jd_coef$model == m),
+                  leftover] = 0
       
       bcr_indices <- setdiff(which(grepl("BCR", names(coef))),
                              union(bcr_jd_indices, bcr_jd2_indices))
@@ -249,6 +296,9 @@ for (s in species)
       bcr_used <- as.integer(sub(".*BCR", "", names(bcr_coef_list)))
       bcr_coef[which(bcr_coef$Species == s & bcr_coef$model == m),
                bcr_used] = coef[bcr_indices]
+      leftover <- setdiff(all_bcr_used, bcr_used)
+      bcr_coef[which(bcr_coef$Species == s & bcr_coef$model == m),
+               leftover] = 0
     }
     if (m == 15) {
       rem_coef[which(rem_coef$Species == s & rem_coef$model == m),"intercept"] = coef[1]
@@ -258,17 +308,25 @@ for (s in species)
       rem_coef[which(rem_coef$Species == s & rem_coef$model == m),"jd2"] = coef[5]
       
       #' See above for explanation
+      all_bcr_used <- as.numeric(as.character(levels(removal_list[[m]]$model$`x$C$BCR`)))
+      
       bcr_jd2_indices <- which(grepl("JD2:", names(coef)))
       bcr_jd2_coef_list <- coef[bcr_jd2_indices]
       bcr_used <- as.integer(sub(".*BCR", "", names(bcr_jd2_coef_list)))
       bcr_jd2_coef[which(bcr_jd2_coef$Species == s & bcr_jd2_coef$model == m),
                    bcr_used] = coef[bcr_jd2_indices]
+      leftover <- setdiff(all_bcr_used, bcr_used)
+      bcr_jd2_coef[which(bcr_jd2_coef$Species == s & bcr_jd2_coef$model == m),
+                   leftover] = 0
       
       bcr_jd_indices <- which(grepl("JD:", names(coef)))
       bcr_jd_coef_list <- coef[bcr_jd_indices]
       bcr_used <- as.integer(sub(".*BCR", "", names(bcr_jd_coef_list)))
       bcr_jd_coef[which(bcr_jd_coef$Species == s & bcr_jd_coef$model == m),
                   bcr_used] = coef[bcr_jd_indices]
+      leftover <- setdiff(all_bcr_used, bcr_used)
+      bcr_jd_coef[which(bcr_jd_coef$Species == s & bcr_jd_coef$model == m),
+                  leftover] = 0
       
       bcr_indices <- setdiff(which(grepl("BCR", names(coef))),
                              union(bcr_jd_indices, bcr_jd2_indices))
@@ -276,6 +334,9 @@ for (s in species)
       bcr_used <- as.integer(sub(".*BCR", "", names(bcr_coef_list)))
       bcr_coef[which(bcr_coef$Species == s & bcr_coef$model == m),
                bcr_used] = coef[bcr_indices]
+      leftover <- setdiff(all_bcr_used, bcr_used)
+      bcr_coef[which(bcr_coef$Species == s & bcr_coef$model == m),
+               leftover] = 0
     }
     rem_vcv_list[[m]][[s]] <- removal_list[[m]]$vcov
   }
