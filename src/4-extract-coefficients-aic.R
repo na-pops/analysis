@@ -1,7 +1,7 @@
 ####### Script Information ########################
 # Brandon P.M. Edwards
 # NA-POPS: analysis
-# 4-extract-coefficients-bic.R
+# 4-extract-coefficients-aic.R
 # Created November 2020
 # Last Updated April 2021
 
@@ -11,10 +11,10 @@ library(detect)
 
 ####### Set Constants #############################
 
-# create function to sapply BIC to a list
-bic_multi <- function(x)
+# create function to sapply AIC to a list
+aic_multi <- function(x)
 {
-  sapply(x, FUN = BIC)
+  sapply(x, FUN = AIC)
 }
 
 n_rem_models <- 15
@@ -31,7 +31,7 @@ species <- substr(list.files(path = "data/removal"),
 rem_coef <- data.frame(Species = rep(species, each = n_rem_models),
                        n = NA, 
                        model = rep(seq(1,n_rem_models), times = length(species)), 
-                       bic = NA,
+                       aic = NA,
                        intercept = NA,
                        tssr = NA,
                        tssr2 = NA,
@@ -63,22 +63,22 @@ for (m in 1:n_rem_models)
   rem_vcv_list[[m]] <- sp_list
 }
 
-rem_bic <- vector(mode = "list", length = length(species))
-names(rem_bic) <- species
+rem_aic <- vector(mode = "list", length = length(species))
+names(rem_aic) <- species
 
 for (s in species)
 {
   load(file = paste0("data/removal/", s, ".rda"))
   rem_coef[which(rem_coef$Species == s), "n"] <- nrow(removal_list[[1]]$Y)
   
-  bic <- bic_multi(x = removal_list)
-  rem_coef[which(rem_coef$Species == s), "bic"] <- bic
+  aic <- aic_multi(x = removal_list)
+  rem_coef[which(rem_coef$Species == s), "aic"] <- aic
   
-  bic_df <- data.frame(Model = seq(1, n_rem_models),
-                       BIC = bic)
-  bic_df <- bic_df[order(bic_df$BIC), ]
-  bic_df$Delta_BIC <- bic_df$BIC - bic_df$BIC[1]
-  rem_bic[[s]] <- bic_df
+  aic_df <- data.frame(Model = seq(1, n_rem_models),
+                       AIC = aic)
+  aic_df <- aic_df[order(aic_df$AIC), ]
+  aic_df$Delta_AIC <- aic_df$AIC - aic_df$AIC[1]
+  rem_aic[[s]] <- aic_df
   
   for (m in 1:n_rem_models)
   {
@@ -360,7 +360,7 @@ write.table(bcr_jd2_coef,
             row.names = FALSE)
 
 save(rem_vcv_list, file = "../results/var-covar/rem_vcv_list.rda")
-save(rem_bic, file = "../results/bic/rem_bic.rda")
+save(rem_aic, file = "../results/aic/rem_aic.rda")
 
 ####### Distance Model Selection ##################
 
@@ -371,7 +371,7 @@ species <- substr(list.files(path = "data/distance"),
 dist_coef <- data.frame(Species = rep(species, each = n_dis_models),
                         n = NA, 
                         model = rep(seq(1,n_dis_models), times = length(species)), 
-                        bic = NA,
+                        aic = NA,
                         intercept = NA,
                         road = NA,
                         forest = NA,
@@ -385,22 +385,22 @@ for (m in 1:n_dis_models)
   dis_vcv_list[[m]] <- sp_list
 }
 
-dis_bic <- vector(mode = "list", length = length(species))
-names(dis_bic) <- species
+dis_aic <- vector(mode = "list", length = length(species))
+names(dis_aic) <- species
 
 for (s in species)
 {
   load(file = paste0("data/distance/", s, ".rda"))
   dist_coef[which(dist_coef$Species == s), "n"] <- nrow(distance_list[[1]]$Y)
   
-  bic <- bic_multi(x = distance_list)
-  dist_coef[which(dist_coef$Species == s), "bic"] <- bic
+  aic <- aic_multi(x = distance_list)
+  dist_coef[which(dist_coef$Species == s), "aic"] <- aic
   
-  bic_df <- data.frame(Model = seq(1, n_dis_models),
-                       BIC = bic)
-  bic_df <- bic_df[order(bic_df$BIC), ]
-  bic_df$Delta_BIC <- bic_df$BIC - bic_df$BIC[1]
-  dis_bic[[s]] <- bic_df
+  aic_df <- data.frame(Model = seq(1, n_dis_models),
+                       AIC = aic)
+  aic_df <- aic_df[order(aic_df$AIC), ]
+  aic_df$Delta_AIC <- aic_df$AIC - aic_df$AIC[1]
+  dis_aic[[s]] <- aic_df
   
   for (m in 1:n_dis_models)
   {
@@ -438,4 +438,4 @@ write.table(dist_coef,
             row.names = FALSE)
 
 save(dis_vcv_list, file = "../results/var-covar/dis_vcv_list.rda")
-save(dis_bic, file = "../results/bic/dis_bic.rda")
+save(dis_aic, file = "../results/aic/dis_aic.rda")
