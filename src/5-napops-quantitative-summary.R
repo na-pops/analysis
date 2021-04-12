@@ -3,7 +3,7 @@
 # NA-POPS: analysis
 # 5-napops-quantitative-summary.R
 # Created January 2021
-# Last Updated March 2021
+# Last Updated April 2021
 
 ####### Import Libraries and External Files #######
 
@@ -17,10 +17,10 @@ summary_stats <- list()
 
 ####### Read Data #################################
 
-load(file = "data/counts.rda")
-load(file = "data/samples.rda")
-load(file = "data/dis_covars_used.rda")
-load(file = "data/rem_covars_used.rda")
+load(file = "data/combined/counts.rda")
+load(file = "data/combined/samples.rda")
+load(file = "data/combined/dis_covars_used.rda")
+load(file = "data/combined/rem_covars_used.rda")
 
 project_list <- read.table("../utilities/proj-list")[,1]
 ibp <- read.csv("../utilities/IBP-Alpha-Codes20.csv")
