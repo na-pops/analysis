@@ -3,16 +3,20 @@
 # NA-POPS: analysis
 # 6-napops-spatial-summary.R
 # Created February 2021
-# Last Updated March 2021
+# Last Updated April 2021
 
 ####### Import Libraries and External Files #######
 
 library(sf)
 library(tidyverse)
 
+####### Set Constants #############################
+
+laea <- 4326# sf::st_crs("+proj=laea +lat_0=40 +lon_0=-95") # Lambert equal area coord reference system
+
 ####### Read Data #################################
 
-load(file = "data/samples.rda")
+load(file = "data/combined/samples.rda")
 
 # Required from 5-napops-quantitative-summary.R
 load("../results/quant-summary/dis_species_summary.rda")
@@ -32,7 +36,7 @@ coords <- project_samples[, c("Latitude", "Longitude")]
 coords <- coords[!is.na(coords$Latitude), ]
 coords <- coords[!is.na(coords$Longitude), ]
 
-coords <- st_as_sf(coords,coords = c("Longitude","Latitude"), crs = 4326)
+coords <- st_as_sf(coords,coords = c("Longitude","Latitude"), crs = laea)
 strat <- strat %>% st_transform(st_crs(coords))
 
 counts_strat <- st_intersects(strat, coords)
@@ -50,7 +54,7 @@ coords <- project_samples[, c("Latitude", "Longitude")]
 coords <- coords[!is.na(coords$Latitude), ]
 coords <- coords[!is.na(coords$Longitude), ]
 
-coords <- st_as_sf(coords,coords = c("Longitude","Latitude"), crs = 4326)
+coords <- st_as_sf(coords,coords = c("Longitude","Latitude"), crs = laea)
 state <- state %>% st_transform(st_crs(coords))
 
 counts_state <- st_intersects(state, coords)
@@ -68,7 +72,7 @@ coords <- project_samples[, c("Latitude", "Longitude")]
 coords <- coords[!is.na(coords$Latitude), ]
 coords <- coords[!is.na(coords$Longitude), ]
 
-coords <- st_as_sf(coords,coords = c("Longitude","Latitude"), crs = 4326)
+coords <- st_as_sf(coords,coords = c("Longitude","Latitude"), crs = laea)
 bcr <- bcr %>% st_transform(st_crs(coords))
 
 counts_bcr <- st_intersects(bcr, coords)
@@ -92,7 +96,7 @@ for (sp in names(dis_species_summary))
   coords <- coords[!is.na(coords$Latitude), ]
   coords <- coords[!is.na(coords$Longitude), ]
   
-  coords <- st_as_sf(coords,coords = c("Longitude","Latitude"), crs = 4326)
+  coords <- st_as_sf(coords,coords = c("Longitude","Latitude"), crs = laea)
   bcr <- bcr %>% st_transform(st_crs(coords))
   
   counts_bcr_sp <- st_intersects(bcr, coords)
@@ -118,7 +122,7 @@ for (sp in names(rem_species_summary))
   coords <- coords[!is.na(coords$Latitude), ]
   coords <- coords[!is.na(coords$Longitude), ]
   
-  coords <- st_as_sf(coords,coords = c("Longitude","Latitude"), crs = 4326)
+  coords <- st_as_sf(coords,coords = c("Longitude","Latitude"), crs = laea)
   bcr <- bcr %>% st_transform(st_crs(coords))
   
   counts_bcr_sp <- st_intersects(bcr, coords)
