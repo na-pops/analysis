@@ -69,18 +69,22 @@ names(rem_aic) <- species
 for (s in species)
 {
   load(file = paste0("data/removal/", s, ".rda"))
-  rem_coef[which(rem_coef$Species == s), "n"] <- nrow(removal_list[[1]]$Y)
+  n_mod_sp <- length(removal_list)
+  
+  rem_coef[which(rem_coef$Species == s & 
+                   rem_coef$model <= n_mod_sp), "n"] <- nrow(removal_list[[1]]$Y)
   
   aic <- aic_multi(x = removal_list)
-  rem_coef[which(rem_coef$Species == s), "aic"] <- aic
+  rem_coef[which(rem_coef$Species == s & 
+                   rem_coef$model <= n_mod_sp), "aic"] <- aic
   
-  aic_df <- data.frame(Model = seq(1, n_rem_models),
+  aic_df <- data.frame(Model = seq(1, n_mod_sp),
                        AIC = aic)
   aic_df <- aic_df[order(aic_df$AIC), ]
   aic_df$Delta_AIC <- aic_df$AIC - aic_df$AIC[1]
   rem_aic[[s]] <- aic_df
   
-  for (m in 1:n_rem_models)
+  for (m in 1:n_mod_sp)
   {
     coef <- coef(removal_list[[m]])
     if (m == 1) {
