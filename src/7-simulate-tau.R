@@ -134,40 +134,8 @@ foreach (i = 1:max(dis$model), .packages = 'MASS') %dopar%
                                      probs = c(0.975),
                                      na.rm = TRUE)))       
     }
-    
-  #   # Add columns of zeros back in to where NA coefficients were previously
-  #   # See https://stackoverflow.com/a/1495204/5665609 for explanation
-  #   if (length(zeros_indices) > 0)
-  #   {
-  #     coef_zeros <- cbind(sim_coef, matrix(0,
-  #                                          ncol = length(zeros_indices),
-  #                                          nrow = nrow(sim_coef)))
-  #     id <- c(seq_along(sim_coef[1,]), zeros_indices + 0.5)
-  #     coef_zeros <- coef_zeros[,order(id)]    
-  #   }else
-  #   {
-  #     coef_zeros <- sim_coef
-  #   }
-  #   
-  #   tau_pred <- exp(as.matrix(design) %*% t(coef_zeros))
-  #   tau <- c(tau, as.numeric(tau_pred[,1]))
-  #   
-  #   # Calculate quantiles
-  #   tau_pred <- tau_pred[,-1]
-  #   tau_low <- c(tau_low,
-  #                as.numeric(apply(tau_pred,
-  #                                 1,
-  #                                 quantile,
-  #                                 probs = c(0.025),
-  #                                 na.rm = TRUE)))
-  #   tau_high <- c(tau_high,
-  #                 as.numeric(apply(tau_pred,
-  #                                  1,
-  #                                  quantile,
-  #                                  probs = c(0.975),
-  #                                  na.rm = TRUE)))
-  # }
   }
+  
   sim_data$tau <- tau
   sim_data$tau_2.5 <- tau_low
   sim_data$tau_97.5 <- tau_high

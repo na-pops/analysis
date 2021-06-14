@@ -62,7 +62,7 @@ foreach (i = 1:max(rem$model), .packages = 'MASS') %dopar%
     design$JD2 <- design$JD ^ 2
     design <- design[, c("Intercept", "TSSR", "TSSR2", "JD", "JD2")]
     
-    coefficients <- as.numeric(rem[which(rem_reduced$Species == sp), 
+    coefficients <- as.numeric(rem_reduced[which(rem_reduced$Species == sp), 
                                    c("intercept", "tssr", "tssr2", 
                                      "jd", "jd2")])
     zeros_indices <- which(is.na(coefficients)) - 1
@@ -70,6 +70,7 @@ foreach (i = 1:max(rem$model), .packages = 'MASS') %dopar%
     {
       coefficients <- coefficients[-which(is.na(coefficients))]    
     }
+    
     vcv <- rem_vcv_list[[i]][[sp]]
     
     # Simulate a bunch of possible coefficients
