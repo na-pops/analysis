@@ -62,9 +62,9 @@ foreach (i = 1:max(rem$model), .packages = 'MASS') %dopar%
     design$JD2 <- design$JD ^ 2
     design <- design[, c("Intercept", "TSSR", "TSSR2", "JD", "JD2")]
     
-    coefficients <- as.numeric(rem[which(rem$Species == sp), 
-                                   c("int_best", "tssr_best", "tssr2_best", 
-                                     "jd_best", "jd2_best")])
+    coefficients <- as.numeric(rem[which(rem_reduced$Species == sp), 
+                                   c("intercept", "tssr", "tssr2", 
+                                     "jd", "jd2")])
     zeros_indices <- which(is.na(coefficients)) - 1
     if (length(zeros_indices) > 0)
     {
