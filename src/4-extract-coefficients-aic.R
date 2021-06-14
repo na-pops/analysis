@@ -78,8 +78,8 @@ for (s in species)
   rem_coef[which(rem_coef$Species == s & 
                    rem_coef$model <= n_mod_sp), "aic"] <- aic
   
-  aic_df <- data.frame(Model = seq(1, n_mod_sp),
-                       AIC = aic)
+  aic_df <- data.frame(Model = seq(1, 9),
+                       AIC = aic[1:9])
   aic_df <- aic_df[order(aic_df$AIC), ]
   aic_df$Delta_AIC <- aic_df$AIC - aic_df$AIC[1]
   rem_aic[[s]] <- aic_df
