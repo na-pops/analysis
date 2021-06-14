@@ -3,7 +3,7 @@
 # NA-POPS: analysis
 # 1-combine-data.R
 # Created August 2020
-# Last Updated March 2021
+# Last Updated April 2021
 
 ####### Import Libraries and External Files #######
 
@@ -83,6 +83,13 @@ time_count_matrix <- dcast(time_only,
 
 # Create distance count matrix
 message("4/7 Now creating dist_count_matrix with dcast().\n")
+
+#' The following chunk of code is for testing purposes for now
+project_counts[which(project_counts$Distance_Method == "E"), "Distance_Method"] <- "Q"
+project_counts[which(project_counts$Distance_Method == "M"), "Distance_Method"] <- "R"
+project_samples[which(project_samples$Distance_Method == "E"), "Distance_Method"] <- "Q"
+project_samples[which(project_samples$Distance_Method == "M"), "Distance_Method"] <- "R"
+
 dist_only <- project_counts[, c(1:5)]
 dist_only <- dist_only[-which(dist_only$Distance_Method == "ZZ"), ]
 dist_only <- dist_only[-which(is.na(dist_only$Distance_Level)), ]
