@@ -3,7 +3,7 @@
 # NA-POPS: analysis
 # 1-combine-data.R
 # Created August 2020
-# Last Updated April 2021
+# Last Updated October 2021
 
 ####### Import Libraries and External Files #######
 
@@ -118,3 +118,6 @@ save(landcover_covariates, file = "data/combined/landcover_covariates.rda")
 save(temporal_covariates, file = "data/combined/temporal_covariates.rda")
 save(time_design, file = "data/combined/time_design.rda")
 save(dist_design, file = "data/combined/dist_design.rda")
+date_file <- file("../results/date.txt")
+writeLines(date(), date_file)
+close(date_file)
