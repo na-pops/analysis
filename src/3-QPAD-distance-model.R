@@ -3,7 +3,7 @@
 # NA-POPS: analysis
 # 3-QPAD-distance-model.R
 # Created August 2020
-# Last Updated April 2021
+# Last Updated Octoner 2021
 
 ####### Import Libraries and External Files #######
 
@@ -18,6 +18,9 @@ load(file = "data/combined/dist_count_matrix.rda")
 load(file = "data/combined/landcover_covariates.rda")
 load(file = "data/combined/dist_design.rda")
 na_sp_list <- read.csv("../utilities/IBP-Alpha-Codes20.csv")
+
+args <- commandArgs(trailingOnly = TRUE)
+n_cores <- args[1]
 
 ####### Data Wrangling ############################
 
@@ -114,7 +117,7 @@ for (s in species)
 
 message(paste0("Beginning parallel modelling for ", length(species), " species.\n"))
 
-cluster <- makeCluster(30, type = "PSOCK")
+cluster <- makeCluster(n_cores, type = "PSOCK")
 registerDoParallel(cluster)
 
 foreach(sp = names(input_list), .packages = 'detect') %dopar%

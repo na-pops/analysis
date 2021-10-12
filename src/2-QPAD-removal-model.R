@@ -3,7 +3,7 @@
 # NA-POPS: analysis
 # 2-QPAD-removal-model.R
 # Created August 2020
-# Last Updated April 2021
+# Last Updated October 2021
 
 ####### Import Libraries and External Files #######
 
@@ -18,6 +18,9 @@ load(file = "data/combined/time_count_matrix.rda")
 load(file = "data/combined/temporal_covariates.rda")
 load(file = "data/combined/time_design.rda")
 na_sp_list <- read.csv("../utilities/IBP-Alpha-Codes20.csv")
+
+args <- commandArgs(trailingOnly = TRUE)
+n_cores <- args[1]
 
 ####### Data Wrangling ############################
 
@@ -81,14 +84,6 @@ if (length(to_remove > 0))
   covars <- covars[-c(to_remove), ]  
 }
 
-to_remove <- which(is.na(covars$BCR))
-if (length(to_remove > 0))
-{
-  counts <- counts[-c(to_remove), ]
-  design <- design[-c(to_remove), ]
-  covars <- covars[-c(to_remove), ]  
-}
-
 # Save which sample IDs (and therefore which covariates) were used during removal modelling
 rem_covars_used <- covars[, c("Sample_ID", "JD", "JD2", "TSSR", "TSSR2", "BCR")]
 rem_covars_used <- rem_covars_used[!duplicated(rem_covars_used$Sample_ID), ]
@@ -99,8 +94,6 @@ species_all <- sort(as.character(unique(counts$Species)))
 landbirds <- na_sp_list[which(na_sp_list$LANDBIRD == "TRUE"), "SPEC"]
 species <- species_all[which(species_all %in% landbirds)]
 
-run_bcr <- NULL
-
 for (s in species)
 {
   if (nrow(counts[counts$Species == s, ]) >= 75)
@@ -110,21 +103,6 @@ for (s in species)
     assign(paste0("C_",s), subset(covars,
                                   Species==s,
                                   select = c(14:18)))
-    
-    sp_c <- eval(parse(text = paste0("C_",s)))
-    t <- data.frame(table(sp_c$B))
-    bcrs_to_drop <- as.numeric(as.character((t[which(t$Freq < 75), "Var1"])))
-    if ((length(bcrs_to_drop) / nrow(t)) < 0.50)
-    {
-      run_bcr <- c(run_bcr, s)
-      ind_to_remove <- which(sp_c$BCR %in% bcrs_to_drop)
-      assign(paste0("C_",s),
-             eval(parse(text = paste0("C_",s)))[-ind_to_remove, ])
-      assign(paste0("D_",s),
-             eval(parse(text = paste0("D_",s)))[-ind_to_remove, ])
-      assign(paste0("Y_",s),
-             eval(parse(text = paste0("Y_",s)))[-ind_to_remove, ])
-    }
   }else
   {
     species <- species[!(species %in% s)]
@@ -142,7 +120,7 @@ for (s in species)
 
 message(paste0("Beginning parallel modelling for ", length(species), " species.\n"))
 
-cluster <- makeCluster(15, type = "PSOCK")
+cluster <- makeCluster(n_cores, type = "PSOCK")
 registerDoParallel(cluster)
 
 foreach(sp = names(input_list), .packages = 'detect') %dopar%
@@ -158,21 +136,9 @@ foreach(sp = names(input_list), .packages = 'detect') %dopar%
     m7 = cmulti(x$Y | x$D ~ 1 + x$C$TSSR + x$C$TSSR2 + x$C$JD, type="rem")
     m8 = cmulti(x$Y | x$D ~ 1 + x$C$TSSR + x$C$JD + x$C$JD2, type="rem")
     m9 = cmulti(x$Y | x$D ~ 1 + x$C$TSSR + x$C$TSSR2 + x$C$JD + x$C$JD2, type="rem")
-    if (sp %in% run_bcr)
-    {
-      m10 = cmulti(x$Y | x$D ~ 1 + x$C$JD + x$C$BCR + x$C$BCR:x$C$JD, type="rem")
-      m11 = cmulti(x$Y | x$D ~ 1 + x$C$JD + x$C$JD2 + x$C$BCR + x$C$BCR:x$C$JD + x$C$BCR:x$C$JD2, type = "rem")
-      m12 = cmulti(x$Y | x$D ~ 1 + x$C$TSSR + x$C$JD + x$C$BCR + x$C$BCR:x$C$JD, type="rem")
-      m13 = cmulti(x$Y | x$D ~ 1 + x$C$TSSR + x$C$TSSR2 + x$C$JD + x$C$BCR + x$C$BCR:x$C$JD, type="rem")
-      m14 = cmulti(x$Y | x$D ~ 1 + x$C$TSSR + x$C$JD + x$C$JD2 + x$C$BCR + x$C$BCR:x$C$JD + x$C$BCR:x$C$JD2, type="rem")
-      m15 = cmulti(x$Y | x$D ~ 1 + x$C$TSSR + x$C$TSSR2 + x$C$JD + x$C$JD2 + x$C$BCR + x$C$BCR:x$C$JD + x$C$BCR:x$C$JD2, type="rem")
-      removal_list <- list(m1, m2, m3, m4, m5, m6, m7, m8, m9, m10, m11, m12, m13, m14, m15)
-      save(removal_list, file = paste0("data/removal/", sp, ".rda"))        
-    }else
-    {
-      removal_list <- list(m1, m2, m3, m4, m5, m6, m7, m8, m9)
-      save(removal_list, file = paste0("data/removal/", sp, ".rda"))   
-    }
+    
+    removal_list <- list(m1, m2, m3, m4, m5, m6, m7, m8, m9)
+    save(removal_list, file = paste0("data/removal/", sp, ".rda"))
   }
 
 stopCluster(cluster)
