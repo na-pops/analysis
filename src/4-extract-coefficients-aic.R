@@ -22,6 +22,8 @@ n_dis_models <- 5
 
 ####### Removal Model Coefficients ################
 
+message("1/2 Extracting removal coefficients. \n")
+
 species <- substr(list.files(path = "data/removal"), 
                   start = 1, 
                   stop = 4)
@@ -127,6 +129,8 @@ save(rem_vcv_list, file = "../results/var-covar/rem_vcv_list.rda")
 save(rem_aic, file = "../results/aic/rem_aic.rda")
 
 ####### Distance Model Selection ##################
+
+message("2/2 Extracting distance coefficients. \n")
 
 species <- substr(list.files(path = "data/distance"), 
                   start = 1, 
