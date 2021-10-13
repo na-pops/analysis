@@ -19,8 +19,7 @@ load(file = "data/combined/landcover_covariates.rda")
 load(file = "data/combined/dist_design.rda")
 na_sp_list <- read.csv("../utilities/IBP-Alpha-Codes20.csv")
 
-args <- commandArgs(trailingOnly = TRUE)
-n_cores <- args[1]
+n_cores <- 30
 
 ####### Data Wrangling ############################
 
