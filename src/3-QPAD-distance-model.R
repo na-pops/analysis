@@ -3,7 +3,7 @@
 # NA-POPS: analysis
 # 3-QPAD-distance-model.R
 # Created August 2020
-# Last Updated Octoner 2021
+# Last Updated October 2021
 
 ####### Import Libraries and External Files #######
 
@@ -28,7 +28,7 @@ covariates_reduced <- landcover_covariates[, c("Sample_ID", "roaddist", "ForestO
 covariates_reduced$ForestOnly_5x5 <- covariates_reduced$ForestOnly_5x5 / 25
 
 # Drop invalid road distances, and create roadside variable
-covariates_reduced <- covariates_reduced[which(covariates_reduced$roaddist > 0), ]
+covariates_reduced <- covariates_reduced[which(covariates_reduced$roaddist >= 0), ]
 covariates_reduced$roadside <- ifelse(covariates_reduced$roaddist < 30, 1, 0)
 
 # Drop method I
