@@ -3,7 +3,7 @@
 # NA-POPS: analysis
 # 2-QPAD-removal-model.R
 # Created August 2020
-# Last Updated October 2021
+# Last Updated November 2021
 
 ####### Import Libraries and External Files #######
 
@@ -27,6 +27,13 @@ n_cores <- 30
 covariates_reduced <- temporal_covariates[which(!is.na(temporal_covariates$JD)), ]
 covariates_reduced <- covariates_reduced[which(!is.na(covariates_reduced$TSSR)), ]
 covariates_reduced <- covariates_reduced[which(!is.na(covariates_reduced$BCR)), ]
+
+# Drop rows that are before March 1 or later than August 31
+covariates_reduced <- covariates_reduced[which(covariates_reduced$JD >= (61/365)), ]
+covariates_reduced <- covariates_reduced[which(covariates_reduced$JD <= (244/365)), ]
+
+# Drop rows that are earlier than 3 hours before sunrise
+covariates_reduced <- covariates_reduced[which(covariates_reduced$TSSR >= (-3 / 24)), ]
 
 max_bands <- ncol(time_design) - 2
 count_names <- c("Sample_ID", "Species", "Time_Method",
