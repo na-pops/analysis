@@ -91,7 +91,7 @@ if (length(to_remove > 0))
 }
 
 # Save which sample IDs (and therefore which covariates) were used during removal modelling
-rem_covars_used <- covars[, c("Sample_ID", "JD", "JD2", "TSSR", "TSSR2", "BCR")]
+rem_covars_used <- covars[, c("Sample_ID", "JD", "TSSR", "TSSR2", "BCR")]
 rem_covars_used <- rem_covars_used[!duplicated(rem_covars_used$Sample_ID), ]
 save(rem_covars_used, file = "data/combined/rem_covars_used.rda")
 
@@ -134,16 +134,13 @@ foreach(sp = names(input_list), .packages = 'detect') %dopar%
     x <- input_list[[sp]]
     x$C$BCR <- as.factor(x$C$BCR)
     m1 = cmulti(x$Y | x$D ~ 1, type="rem")
-    m2 = cmulti(x$Y | x$D ~ 1 + x$C$TSSR, type="rem")
-    m3 = cmulti(x$Y | x$D ~ 1 + x$C$JD, type="rem")
+    m2 = cmulti(x$Y | x$D ~ 1 + x$C$JD, type="rem")
+    m3 = cmulti(x$Y | x$D ~ 1 + x$C$TSSR, type="rem")
     m4 = cmulti(x$Y | x$D ~ 1 + x$C$TSSR + x$C$TSSR2, type = "rem")
-    m5 = cmulti(x$Y | x$D ~ 1 + x$C$JD + x$C$JD2, type = "rem")
-    m6 = cmulti(x$Y | x$D ~ 1 + x$C$TSSR + x$C$JD, type="rem")
-    m7 = cmulti(x$Y | x$D ~ 1 + x$C$TSSR + x$C$TSSR2 + x$C$JD, type="rem")
-    m8 = cmulti(x$Y | x$D ~ 1 + x$C$TSSR + x$C$JD + x$C$JD2, type="rem")
-    m9 = cmulti(x$Y | x$D ~ 1 + x$C$TSSR + x$C$TSSR2 + x$C$JD + x$C$JD2, type="rem")
-    
-    removal_list <- list(m1, m2, m3, m4, m5, m6, m7, m8, m9)
+    m5 = cmulti(x$Y | x$D ~ 1 + x$C$TSSR + x$C$JD, type="rem")
+    m6 = cmulti(x$Y | x$D ~ 1 + x$C$TSSR + x$C$TSSR2 + x$C$JD, type="rem")
+
+    removal_list <- list(m1, m2, m3, m4, m5, m6)
     save(removal_list, file = paste0("data/removal/", sp, ".rda"))
   }
 

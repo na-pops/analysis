@@ -3,7 +3,7 @@
 # NA-POPS: analysis
 # 8-simulate-phi.R
 # Created January 2021
-# Last Updated June 2021
+# Last Updated November 2021
 
 ####### Import Libraries and External Files #######
 
@@ -17,7 +17,7 @@ source("../utilities/rm-non-sp.R")
 ####### Read Data #################################
 
 rem <- rm_non_sp(read.csv("../results/coefficients/removal.csv"))
-rem <- rem[which(rem$model <=9), ]
+
 family <- read.csv("../utilities/NACC_list_species.csv")[, c("common_name",
                                                              "family")]
 ibp <- read.csv("../utilities/IBP-Alpha-Codes20.csv")[, c("SPEC",
@@ -59,12 +59,11 @@ foreach (i = 1:max(rem$model), .packages = 'MASS') %dopar%
     design$TSSR <- design$TSSR / 24
     design$TSSR2 <- design$TSSR ^ 2
     design$JD <- design$JD / 365
-    design$JD2 <- design$JD ^ 2
-    design <- design[, c("Intercept", "TSSR", "TSSR2", "JD", "JD2")]
+    design <- design[, c("Intercept", "TSSR", "TSSR2", "JD")]
     
     coefficients <- as.numeric(rem_reduced[which(rem_reduced$Species == sp), 
                                    c("intercept", "tssr", "tssr2", 
-                                     "jd", "jd2")])
+                                     "jd")])
     zeros_indices <- which(is.na(coefficients)) - 1
     if (length(zeros_indices) > 0)
     {

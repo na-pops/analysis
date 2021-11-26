@@ -114,7 +114,7 @@ for (sp in rem_species)
   temp <- merge(x = temp, y = rem_covars_used, by = "Sample_ID")
   temp <- merge(x = temp, y = project_samples[, c("Sample_ID", "Latitude", "Longitude")],
                 by = "Sample_ID")
-  rem_species_summary[[sp]] <- temp[, c("Sample_ID", "JD", "JD2", "TSSR", "TSSR2",
+  rem_species_summary[[sp]] <- temp[, c("Sample_ID", "JD", "TSSR", "TSSR2",
                                         "Latitude", "Longitude")]
 }
 
