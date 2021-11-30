@@ -3,7 +3,7 @@
 # NA-POPS: analysis
 # 1-combine-data.R
 # Created August 2020
-# Last Updated October 2021
+# Last Updated November 2021
 
 ####### Import Libraries and External Files #######
 
@@ -44,6 +44,7 @@ for (i in 1:n_proj)
   project_samples[[i]] <- data.frame(get_data(data_dir))
 }
 project_counts <- do.call(rbind, project_counts)
+project_counts$Abundance <- as.numeric(project_counts$Abundance)
 project_samples <- do.call(rbind, project_samples)
 
 # Create combined landcover covariate df and temporal covariate df
