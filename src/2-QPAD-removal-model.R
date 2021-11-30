@@ -23,17 +23,17 @@ n_cores <- 30
 
 ####### Data Wrangling ############################
 
-# Drop rows that have NA in JD or TSSR
-covariates_reduced <- temporal_covariates[which(!is.na(temporal_covariates$JD)), ]
+# Drop rows that have NA in OD or TSSR
+covariates_reduced <- temporal_covariates[which(!is.na(temporal_covariates$OD)), ]
 covariates_reduced <- covariates_reduced[which(!is.na(covariates_reduced$TSSR)), ]
 covariates_reduced <- covariates_reduced[which(!is.na(covariates_reduced$BCR)), ]
 
 # Drop rows that are before March 1 or later than August 31
-covariates_reduced <- covariates_reduced[which(covariates_reduced$JD >= (61/365)), ]
-covariates_reduced <- covariates_reduced[which(covariates_reduced$JD <= (244/365)), ]
+covariates_reduced <- covariates_reduced[which(covariates_reduced$OD >= (61)), ]
+covariates_reduced <- covariates_reduced[which(covariates_reduced$OD <= (244)), ]
 
 # Drop rows that are earlier than 3 hours before sunrise
-covariates_reduced <- covariates_reduced[which(covariates_reduced$TSSR >= (-3 / 24)), ]
+covariates_reduced <- covariates_reduced[which(covariates_reduced$TSSR >= (-3)), ]
 
 max_bands <- ncol(time_design) - 2
 count_names <- c("Sample_ID", "Species", "Time_Method",
@@ -74,7 +74,7 @@ covars <- plyr::join(counts,
                      match = "all")
 
 # Remove rows with NA covariates
-to_remove <- which(is.na(covars$JD))
+to_remove <- which(is.na(covars$OD))
 if (length(to_remove > 0))
 {
   counts <- counts[-c(to_remove), ]
@@ -91,7 +91,7 @@ if (length(to_remove > 0))
 }
 
 # Save which sample IDs (and therefore which covariates) were used during removal modelling
-rem_covars_used <- covars[, c("Sample_ID", "JD", "TSSR", "TSSR2", "BCR")]
+rem_covars_used <- covars[, c("Sample_ID", "OD", "TSSR", "BCR")]
 rem_covars_used <- rem_covars_used[!duplicated(rem_covars_used$Sample_ID), ]
 save(rem_covars_used, file = "data/combined/rem_covars_used.rda")
 
@@ -104,11 +104,19 @@ for (s in species)
 {
   if (nrow(counts[counts$Species == s, ]) >= 75)
   {
-    assign(paste0("Y_",s), as.matrix(counts[counts$Species==s, col_names]))
-    assign(paste0("D_",s), as.matrix(design[design$Species==s, col_names]))
-    assign(paste0("C_",s), subset(covars,
-                                  Species==s,
-                                  select = c(14:18)))
+    counts_sp <- counts[which(counts$Species == s), col_names]
+    design_sp <- design[which(design$Species == s), col_names]
+    covars_sp <- covars[which(covars$Species == s), 14:15]
+    
+    covars_sp$OD <- (covars_sp$OD - median(covars_sp$OD)) / 365
+    covars_sp$OD2 <- covars_sp$OD ^ 2
+    
+    covars_sp$TSSR <- (covars_sp$TSSR - median(covars_sp$TSSR)) / 24
+    covars_sp$TSSR2 <- covars_sp$TSSR ^ 2
+    
+    assign(paste0("Y_",s), as.matrix(counts_sp))
+    assign(paste0("D_",s), as.matrix(design_sp))
+    assign(paste0("C_",s), subset(covars_sp))
   }else
   {
     species <- species[!(species %in% s)]
@@ -134,13 +142,16 @@ foreach(sp = names(input_list), .packages = 'detect') %dopar%
     x <- input_list[[sp]]
     x$C$BCR <- as.factor(x$C$BCR)
     m1 = cmulti(x$Y | x$D ~ 1, type="rem")
-    m2 = cmulti(x$Y | x$D ~ 1 + x$C$JD, type="rem")
-    m3 = cmulti(x$Y | x$D ~ 1 + x$C$TSSR, type="rem")
-    m4 = cmulti(x$Y | x$D ~ 1 + x$C$TSSR + x$C$TSSR2, type = "rem")
-    m5 = cmulti(x$Y | x$D ~ 1 + x$C$TSSR + x$C$JD, type="rem")
-    m6 = cmulti(x$Y | x$D ~ 1 + x$C$TSSR + x$C$TSSR2 + x$C$JD, type="rem")
+    m2 = cmulti(x$Y | x$D ~ 1 + x$C$OD, type="rem")
+    m3 = cmulti(x$Y | x$D ~ 1 + x$C$OD + x$C$OD2, type = "rem")
+    m4 = cmulti(x$Y | x$D ~ 1 + x$C$TSSR, type="rem")
+    m5 = cmulti(x$Y | x$D ~ 1 + x$C$TSSR + x$C$TSSR2, type = "rem")
+    m6 = cmulti(x$Y | x$D ~ 1 + x$C$TSSR + x$C$OD, type="rem")
+    m7 = cmulti(x$Y | x$D ~ 1 + x$C$TSSR + x$C$OD + x$C$OD2, type="rem")
+    m8 = cmulti(x$Y | x$D ~ 1 + x$C$TSSR + x$C$TSSR2 + x$C$OD, type="rem")
+    m9 = cmulti(x$Y | x$D ~ 1 + x$C$TSSR + x$C$TSSR2 + x$C$OD + x$C$OD2, type="rem")
 
-    removal_list <- list(m1, m2, m3, m4, m5, m6)
+    removal_list <- list(m1, m2, m3, m4, m5, m6, m7, m8, m9)
     save(removal_list, file = paste0("data/removal/", sp, ".rda"))
   }
 

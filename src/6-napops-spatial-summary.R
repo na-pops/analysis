@@ -3,7 +3,7 @@
 # NA-POPS: analysis
 # 6-napops-spatial-summary.R
 # Created February 2021
-# Last Updated April 2021
+# Last Updated November 2021
 
 ####### Import Libraries and External Files #######
 
@@ -16,11 +16,16 @@ laea <- 4326# sf::st_crs("+proj=laea +lat_0=40 +lon_0=-95") # Lambert equal area
 
 ####### Read Data #################################
 
-load(file = "data/combined/samples.rda")
-
-# Required from 5-napops-quantitative-summary.R
+# load(file = "data/combined/samples.rda")
+# 
+# # Required from 5-napops-quantitative-summary.R
 load("../results/quant-summary/dis_species_summary.rda")
 load("../results/quant-summary/rem_species_summary.rda")
+
+load(file = "data/combined/counts.rda")
+load(file = "data/combined/samples.rda")
+load(file = "data/combined/dis_covars_used.rda")
+load(file = "data/combined/rem_covars_used.rda")
 
 bcr <- read_sf("../utilities/shp/bcr",
                  layer = "BBS_BCR_strata")
@@ -90,8 +95,12 @@ names(bcr_dis_coverage) <- names(dis_species_summary)
 
 for (sp in names(dis_species_summary))
 {
-  df <- dis_species_summary[[sp]]
-  coords <- df[, c("Latitude", "Longitude")]
+  temp <- project_counts[which(project_counts$Species == sp), ]
+  temp <- temp[!duplicated(temp$Sample_ID), ]
+  temp <- merge(x = temp, y = dis_covars_used, by = "Sample_ID")
+  temp <- merge(x = temp, y = project_samples[, c("Sample_ID", "Latitude", "Longitude")],
+                by = "Sample_ID")
+  coords <- temp[, c("Latitude", "Longitude")]
   
   coords <- coords[!is.na(coords$Latitude), ]
   coords <- coords[!is.na(coords$Longitude), ]
@@ -116,8 +125,12 @@ names(bcr_rem_coverage) <- names(rem_species_summary)
 
 for (sp in names(rem_species_summary))
 {
-  df <- rem_species_summary[[sp]]
-  coords <- df[, c("Latitude", "Longitude")]
+  temp <- project_counts[which(project_counts$Species == sp), ]
+  temp <- temp[!duplicated(temp$Sample_ID), ]
+  temp <- merge(x = temp, y = rem_covars_used, by = "Sample_ID")
+  temp <- merge(x = temp, y = project_samples[, c("Sample_ID", "Latitude", "Longitude")],
+                by = "Sample_ID")
+  coords <- temp[, c("Latitude", "Longitude")]
   
   coords <- coords[!is.na(coords$Latitude), ]
   coords <- coords[!is.na(coords$Longitude), ]

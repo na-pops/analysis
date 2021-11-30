@@ -3,7 +3,7 @@
 # NA-POPS: analysis
 # 5-napops-quantitative-summary.R
 # Created January 2021
-# Last Updated April 2021
+# Last Updated November 2021
 
 ####### Import Libraries and External Files #######
 
@@ -32,6 +32,9 @@ rem <- rm_non_sp(order_taxo(read.csv("../results/coefficients/removal.csv")))
 summary_stats[["n_observations"]] <- nrow(project_counts)
 summary_stats[["n_samples"]] <- nrow(project_samples)
 
+rem_covars <- rem_covars_used[, c("OD", "TSSR")]
+dis_covars <- dis_covars_used[, c("ForestOnly_5x5", "roadside")]
+
 utc <- project_samples$UTC
 year <- unique(strptime(utc, 
                         format = "%Y-%m-%dT%H:%M:%SZ", 
@@ -46,7 +49,7 @@ p_split <- strsplit(all_projects, split = ":")
 # First deal with the metaprojects
 p_split_meta <- p_split[which(lengths(p_split) == 2)]
 project_df <- data.frame(Metaproject = sapply(p_split_meta, "[[", 1),
-                      Project = sapply(p_split_meta, "[[", 2))
+                         Project = sapply(p_split_meta, "[[", 2))
 project_df <- project_df[order(project_df$Metaproject, project_df$Project), ]
 
 
@@ -94,11 +97,8 @@ for (sp in dis_species)
 {
   temp <- project_counts[which(project_counts$Species == sp), ]
   temp <- temp[!duplicated(temp$Sample_ID), ]
-  temp <- merge(x = temp, y = dis_covars_used, by = "Sample_ID")
-  temp <- merge(x = temp, y = project_samples[, c("Sample_ID", "Latitude", "Longitude")],
-                by = "Sample_ID")
-  dis_species_summary[[sp]] <- temp[, c("Sample_ID", "ForestOnly_5x5", "roadside",
-                                        "Latitude", "Longitude")]
+  temp <- merge(x = dis_covars_used, y = temp, by = "Sample_ID")
+  dis_species_summary[[sp]] <- temp[, c("ForestOnly_5x5", "roadside")]
 }
 
 ####### Species-specific Summary (Removal) ########
@@ -111,11 +111,8 @@ for (sp in rem_species)
 {
   temp <- project_counts[which(project_counts$Species == sp), ]
   temp <- temp[!duplicated(temp$Sample_ID), ]
-  temp <- merge(x = temp, y = rem_covars_used, by = "Sample_ID")
-  temp <- merge(x = temp, y = project_samples[, c("Sample_ID", "Latitude", "Longitude")],
-                by = "Sample_ID")
-  rem_species_summary[[sp]] <- temp[, c("Sample_ID", "JD", "TSSR", "TSSR2",
-                                        "Latitude", "Longitude")]
+  temp <- merge(x = rem_covars_used, y = temp, by = "Sample_ID")
+  rem_species_summary[[sp]] <- temp[, c("OD", "TSSR")]
 }
 
 ####### Output Summary Statistics and Tables ######
@@ -128,5 +125,7 @@ write.table(x = species_table, file = "../results/quant-summary/species_table.cs
 
 save(summary_stats, file = "../results/quant-summary/summary_statistics.rda")
 
+save(dis_covars, file = "../results/quant-summary/dis_covars.rda")
+save(rem_covars, file = "../results/quant-summary/rem_covars.rda")
 save(dis_species_summary, file = "../results/quant-summary/dis_species_summary.rda")
 save(rem_species_summary, file = "../results/quant-summary/rem_species_summary.rda")

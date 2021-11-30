@@ -17,7 +17,7 @@ aic_multi <- function(x)
   sapply(x, FUN = AIC)
 }
 
-n_rem_models <- 6
+n_rem_models <- 9
 n_dis_models <- 5
 
 ####### Removal Model Coefficients ################
@@ -35,7 +35,8 @@ rem_coef <- data.frame(Species = rep(species, each = n_rem_models),
                        intercept = NA,
                        tssr = NA,
                        tssr2 = NA,
-                       jd = NA)
+                       od = NA,
+                       od2 = NA)
 
 rem_vcv_list <- vector(mode = "list", length = n_rem_models)
 sp_list <- vector(mode = "list", length = length(species))
@@ -60,8 +61,8 @@ for (s in species)
   rem_coef[which(rem_coef$Species == s & 
                    rem_coef$model <= n_mod_sp), "aic"] <- aic
   
-  aic_df <- data.frame(Model = seq(1, n_rem_models),
-                       AIC = aic[1:n_rem_models])
+  aic_df <- data.frame(Model = seq(1, 9),
+                       AIC = aic[1:9])
   aic_df <- aic_df[order(aic_df$AIC), ]
   aic_df$Delta_AIC <- aic_df$AIC - aic_df$AIC[1]
   rem_aic[[s]] <- aic_df
@@ -74,11 +75,11 @@ for (s in species)
     }
     if (m == 2) {
       rem_coef[which(rem_coef$Species == s & rem_coef$model == m),"intercept"] = coef[1]
-      rem_coef[which(rem_coef$Species == s & rem_coef$model == m),"jd"] = coef[2]
+      rem_coef[which(rem_coef$Species == s & rem_coef$model == m),"tssr"] = coef[2]
     }
     if (m == 3) {
       rem_coef[which(rem_coef$Species == s & rem_coef$model == m),"intercept"] = coef[1]
-      rem_coef[which(rem_coef$Species == s & rem_coef$model == m),"tssr"] = coef[2]
+      rem_coef[which(rem_coef$Species == s & rem_coef$model == m),"od"] = coef[2]
     }
     if (m == 4) {
       rem_coef[which(rem_coef$Species == s & rem_coef$model == m),"intercept"] = coef[1]
@@ -87,15 +88,34 @@ for (s in species)
     }
     if (m == 5) {
       rem_coef[which(rem_coef$Species == s & rem_coef$model == m),"intercept"] = coef[1]
-      rem_coef[which(rem_coef$Species == s & rem_coef$model == m),"tssr"] = coef[2]
-      rem_coef[which(rem_coef$Species == s & rem_coef$model == m),"jd"] = coef[3]
+      rem_coef[which(rem_coef$Species == s & rem_coef$model == m),"od"] = coef[2]
+      rem_coef[which(rem_coef$Species == s & rem_coef$model == m),"od2"] = coef[3]
     }
     if (m == 6) {
       rem_coef[which(rem_coef$Species == s & rem_coef$model == m),"intercept"] = coef[1]
       rem_coef[which(rem_coef$Species == s & rem_coef$model == m),"tssr"] = coef[2]
-      rem_coef[which(rem_coef$Species == s & rem_coef$model == m),"tssr2"] = coef[3]
-      rem_coef[which(rem_coef$Species == s & rem_coef$model == m),"jd"] = coef[4]
+      rem_coef[which(rem_coef$Species == s & rem_coef$model == m),"od"] = coef[3]
     }
+    if (m == 7) {
+      rem_coef[which(rem_coef$Species == s & rem_coef$model == m),"intercept"] = coef[1]
+      rem_coef[which(rem_coef$Species == s & rem_coef$model == m),"tssr"] = coef[2]
+      rem_coef[which(rem_coef$Species == s & rem_coef$model == m),"tssr2"] = coef[3]
+      rem_coef[which(rem_coef$Species == s & rem_coef$model == m),"od"] = coef[4]
+    }
+    if (m == 8) {
+      rem_coef[which(rem_coef$Species == s & rem_coef$model == m),"intercept"] = coef[1]
+      rem_coef[which(rem_coef$Species == s & rem_coef$model == m),"tssr"] = coef[2]
+      rem_coef[which(rem_coef$Species == s & rem_coef$model == m),"od"] = coef[3]
+      rem_coef[which(rem_coef$Species == s & rem_coef$model == m),"od2"] = coef[4]
+    }
+    if (m == 9) {
+      rem_coef[which(rem_coef$Species == s & rem_coef$model == m),"intercept"] = coef[1]
+      rem_coef[which(rem_coef$Species == s & rem_coef$model == m),"tssr"] = coef[2]
+      rem_coef[which(rem_coef$Species == s & rem_coef$model == m),"tssr2"] = coef[3]
+      rem_coef[which(rem_coef$Species == s & rem_coef$model == m),"od"] = coef[4]
+      rem_coef[which(rem_coef$Species == s & rem_coef$model == m),"od2"] = coef[5]
+    }
+    
     rem_vcv_list[[m]][[s]] <- removal_list[[m]]$vcov
   }
 }
