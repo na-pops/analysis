@@ -19,7 +19,7 @@ load(file = "data/combined/temporal_covariates.rda")
 load(file = "data/combined/time_design.rda")
 na_sp_list <- read.csv("../utilities/IBP-Alpha-Codes20.csv")
 
-n_cores <- 30
+n_cores <- 4
 
 ####### Data Wrangling ############################
 
@@ -116,7 +116,7 @@ for (s in species)
     
     assign(paste0("Y_",s), as.matrix(counts_sp))
     assign(paste0("D_",s), as.matrix(design_sp))
-    assign(paste0("C_",s), subset(covars_sp))
+    assign(paste0("C_",s), as.matrix(covars_sp))
   }else
   {
     species <- species[!(species %in% s)]
@@ -140,7 +140,7 @@ registerDoParallel(cluster)
 foreach(sp = names(input_list), .packages = 'detect') %dopar%
   {
     x <- input_list[[sp]]
-    x$C$BCR <- as.factor(x$C$BCR)
+
     m1 = cmulti(x$Y | x$D ~ 1, type="rem")
     m2 = cmulti(x$Y | x$D ~ 1 + x$C$OD, type="rem")
     m3 = cmulti(x$Y | x$D ~ 1 + x$C$OD + x$C$OD2, type = "rem")
