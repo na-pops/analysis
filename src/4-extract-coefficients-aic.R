@@ -3,7 +3,7 @@
 # NA-POPS: analysis
 # 4-extract-coefficients-aic.R
 # Created November 2020
-# Last Updated November 2021
+# Last Updated December 2021
 
 ####### Import Libraries and External Files #######
 
@@ -75,21 +75,21 @@ for (s in species)
     }
     if (m == 2) {
       rem_coef[which(rem_coef$Species == s & rem_coef$model == m),"intercept"] = coef[1]
-      rem_coef[which(rem_coef$Species == s & rem_coef$model == m),"tssr"] = coef[2]
+      rem_coef[which(rem_coef$Species == s & rem_coef$model == m),"od"] = coef[2]
     }
     if (m == 3) {
       rem_coef[which(rem_coef$Species == s & rem_coef$model == m),"intercept"] = coef[1]
       rem_coef[which(rem_coef$Species == s & rem_coef$model == m),"od"] = coef[2]
+      rem_coef[which(rem_coef$Species == s & rem_coef$model == m),"od2"] = coef[3]
     }
     if (m == 4) {
       rem_coef[which(rem_coef$Species == s & rem_coef$model == m),"intercept"] = coef[1]
       rem_coef[which(rem_coef$Species == s & rem_coef$model == m),"tssr"] = coef[2]
-      rem_coef[which(rem_coef$Species == s & rem_coef$model == m),"tssr2"] = coef[3]
     }
     if (m == 5) {
       rem_coef[which(rem_coef$Species == s & rem_coef$model == m),"intercept"] = coef[1]
-      rem_coef[which(rem_coef$Species == s & rem_coef$model == m),"od"] = coef[2]
-      rem_coef[which(rem_coef$Species == s & rem_coef$model == m),"od2"] = coef[3]
+      rem_coef[which(rem_coef$Species == s & rem_coef$model == m),"tssr"] = coef[2]
+      rem_coef[which(rem_coef$Species == s & rem_coef$model == m),"tssr2"] = coef[3]
     }
     if (m == 6) {
       rem_coef[which(rem_coef$Species == s & rem_coef$model == m),"intercept"] = coef[1]
@@ -99,14 +99,14 @@ for (s in species)
     if (m == 7) {
       rem_coef[which(rem_coef$Species == s & rem_coef$model == m),"intercept"] = coef[1]
       rem_coef[which(rem_coef$Species == s & rem_coef$model == m),"tssr"] = coef[2]
-      rem_coef[which(rem_coef$Species == s & rem_coef$model == m),"tssr2"] = coef[3]
-      rem_coef[which(rem_coef$Species == s & rem_coef$model == m),"od"] = coef[4]
+      rem_coef[which(rem_coef$Species == s & rem_coef$model == m),"od"] = coef[3]
+      rem_coef[which(rem_coef$Species == s & rem_coef$model == m),"od2"] = coef[4]
     }
     if (m == 8) {
       rem_coef[which(rem_coef$Species == s & rem_coef$model == m),"intercept"] = coef[1]
       rem_coef[which(rem_coef$Species == s & rem_coef$model == m),"tssr"] = coef[2]
-      rem_coef[which(rem_coef$Species == s & rem_coef$model == m),"od"] = coef[3]
-      rem_coef[which(rem_coef$Species == s & rem_coef$model == m),"od2"] = coef[4]
+      rem_coef[which(rem_coef$Species == s & rem_coef$model == m),"tssr2"] = coef[3]
+      rem_coef[which(rem_coef$Species == s & rem_coef$model == m),"od"] = coef[4]
     }
     if (m == 9) {
       rem_coef[which(rem_coef$Species == s & rem_coef$model == m),"intercept"] = coef[1]
