@@ -3,7 +3,7 @@
 # NA-POPS: analysis
 # 3-QPAD-distance-model.R
 # Created August 2020
-# Last Updated October 2021
+# Last Updated December 2021
 
 ####### Import Libraries and External Files #######
 
@@ -19,7 +19,7 @@ load(file = "data/combined/landcover_covariates.rda")
 load(file = "data/combined/dist_design.rda")
 na_sp_list <- read.csv("../utilities/IBP-Alpha-Codes20.csv")
 
-n_cores <- 30
+n_cores <- 4
 
 ####### Data Wrangling ############################
 
