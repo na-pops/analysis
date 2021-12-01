@@ -116,7 +116,7 @@ for (s in species)
     
     assign(paste0("Y_",s), as.matrix(counts_sp))
     assign(paste0("D_",s), as.matrix(design_sp))
-    assign(paste0("C_",s), as.matrix(covars_sp))
+    assign(paste0("C_",s), covars_sp)
   }else
   {
     species <- species[!(species %in% s)]
