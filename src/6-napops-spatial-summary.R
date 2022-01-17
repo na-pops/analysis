@@ -3,7 +3,7 @@
 # NA-POPS: analysis
 # 6-napops-spatial-summary.R
 # Created February 2021
-# Last Updated December 2021
+# Last Updated January 2022
 
 ####### Import Libraries and External Files #######
 
@@ -29,7 +29,7 @@ load(file = "data/combined/dis_covars_used.rda")
 load(file = "data/combined/rem_covars_used.rda")
 
 bcr <- read_sf("../utilities/shp/bcr",
-                 layer = "BBS_BCR_strata")
+               layer = "BBS_BCR_strata")
 
 ####### Analysis by BCR ####################
 
@@ -70,9 +70,9 @@ for (sp in names(dis_species_summary))
   
   counts_bcr_sp <- st_intersects(bcr, coords)
   bcr_coverage_sp <- data.frame(BCR = bcr$ST_12,
-                             ncounts = lengths(counts_bcr_sp),
-                             sqrt_ncounts = sqrt(lengths(counts_bcr_sp)),
-                             stringsAsFactors = FALSE)
+                                ncounts = lengths(counts_bcr_sp),
+                                sqrt_ncounts = sqrt(lengths(counts_bcr_sp)),
+                                stringsAsFactors = FALSE)
   bcr_coverage_sp$nc_cat <- cut(bcr_coverage_sp$ncounts, breaks = c(-1,0,(c(100,200,500,1000,15000))))
   bcr_dis_coverage[[sp]] <- bcr_coverage_sp
 }
