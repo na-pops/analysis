@@ -32,8 +32,8 @@ rem <- rm_non_sp(order_taxo(read.csv("../results/coefficients/removal.csv")))
 summary_stats[["n_observations"]] <- nrow(project_counts)
 summary_stats[["n_samples"]] <- nrow(project_samples)
 
-rem_covars <- rem_covars_used[, c("OD", "TSSR")]
-dis_covars <- dis_covars_used[, c("ForestOnly_5x5", "roadside")]
+rem_covars <- rem_covars_used[, c("OD", "TSSR", "Time_Method")]
+dis_covars <- dis_covars_used[, c("ForestOnly_5x5", "roadside", "Distance_Method")]
 
 utc <- project_samples$UTC
 year <- unique(strptime(utc, 
@@ -98,7 +98,7 @@ for (sp in dis_species)
   temp <- project_counts[which(project_counts$Species == sp), ]
   temp <- temp[!duplicated(temp$Sample_ID), ]
   temp <- merge(x = dis_covars_used, y = temp, by = "Sample_ID")
-  dis_species_summary[[sp]] <- temp[, c("ForestOnly_5x5", "roadside")]
+  dis_species_summary[[sp]] <- temp[, c("ForestOnly_5x5", "roadside", "Distance_Method")]
 }
 
 ####### Species-specific Summary (Removal) ########
@@ -112,7 +112,7 @@ for (sp in rem_species)
   temp <- project_counts[which(project_counts$Species == sp), ]
   temp <- temp[!duplicated(temp$Sample_ID), ]
   temp <- merge(x = rem_covars_used, y = temp, by = "Sample_ID")
-  rem_species_summary[[sp]] <- temp[, c("OD", "TSSR")]
+  rem_species_summary[[sp]] <- temp[, c("OD", "TSSR", "Time_Method")]
 }
 
 ####### Output Summary Statistics and Tables ######

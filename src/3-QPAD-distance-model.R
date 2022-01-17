@@ -3,7 +3,7 @@
 # NA-POPS: analysis
 # 3-QPAD-distance-model.R
 # Created August 2020
-# Last Updated December 2021
+# Last Updated January 2022
 
 ####### Import Libraries and External Files #######
 
@@ -82,6 +82,8 @@ covars <- covars[-c(to_remove), ]
 
 # Save which sample IDs (and therefore which covariates) were used during distance modelling
 dis_covars_used <- covars[, c("Sample_ID", "ForestOnly_5x5", "roadside")]
+dis_covars_used <- cbind(dis_covars_used, design$Distance_Method)
+names(dis_covars_used)[ncol(dis_covars_used)] <- "Distance_Method"
 dis_covars_used <- dis_covars_used[!duplicated(dis_covars_used$Sample_ID), ]
 save(dis_covars_used, file = "data/combined/dis_covars_used.rda")
 

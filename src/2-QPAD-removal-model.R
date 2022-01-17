@@ -3,7 +3,7 @@
 # NA-POPS: analysis
 # 2-QPAD-removal-model.R
 # Created August 2020
-# Last Updated November 2021
+# Last Updated January 2022
 
 ####### Import Libraries and External Files #######
 
@@ -92,7 +92,9 @@ if (length(to_remove > 0))
 
 # Save which sample IDs (and therefore which covariates) were used during removal modelling
 rem_covars_used <- covars[, c("Sample_ID", "OD", "TSSR", "BCR")]
+rem_covars_used <- cbind(rem_covars_used, design[, c("Time_Method")])
 rem_covars_used <- rem_covars_used[!duplicated(rem_covars_used$Sample_ID), ]
+names(rem_covars_used)[ncol(rem_covars_used)] <- "Time_Method"
 save(rem_covars_used, file = "data/combined/rem_covars_used.rda")
 
 # Build matrices by species
