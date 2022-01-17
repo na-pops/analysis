@@ -89,7 +89,8 @@ save(dis_covars_used, file = "data/combined/dis_covars_used.rda")
 
 # Build matrices by species
 species_all <- sort(as.character(unique(counts$Species)))
-landbirds <- na_sp_list[which(na_sp_list$LANDBIRD == "TRUE"), "SPEC"]
+landbirds <- na_sp_list[-which(na_sp_list$LANDBIRD == "FALSE" |
+                                 na_sp_list$SP == "+"), "SPEC"]
 species <- species_all[which(species_all %in% landbirds)]
 
 for (s in species)
