@@ -3,7 +3,7 @@
 # NA-POPS: analysis
 # 5-napops-quantitative-summary.R
 # Created January 2021
-# Last Updated November 2021
+# Last Updated January 2022
 
 ####### Import Libraries and External Files #######
 
@@ -24,8 +24,8 @@ load(file = "data/combined/rem_covars_used.rda")
 
 project_list <- read.table("../utilities/proj-list")[,1]
 ibp <- read.csv("../utilities/IBP-Alpha-Codes20.csv")
-dis <- rm_non_sp(order_taxo(read.csv("../results/coefficients/distance.csv")))
-rem <- rm_non_sp(order_taxo(read.csv("../results/coefficients/removal.csv")))
+dis <- order_taxo(read.csv("../results/coefficients/distance.csv"))
+rem <- order_taxo(read.csv("../results/coefficients/removal.csv"))
 
 ####### Summary of Samples and Counts DFs #########
 
@@ -97,7 +97,8 @@ for (sp in dis_species)
 {
   temp <- project_counts[which(project_counts$Species == sp), ]
   temp <- temp[!duplicated(temp$Sample_ID), ]
-  temp <- merge(x = dis_covars_used, y = temp, by = "Sample_ID")
+  temp <- merge(x = dis_covars_used[, c("Sample_ID", "ForestOnly_5x5", "roadside")], 
+                y = temp, by = "Sample_ID")
   dis_species_summary[[sp]] <- temp[, c("ForestOnly_5x5", "roadside", "Distance_Method")]
 }
 
@@ -111,7 +112,7 @@ for (sp in rem_species)
 {
   temp <- project_counts[which(project_counts$Species == sp), ]
   temp <- temp[!duplicated(temp$Sample_ID), ]
-  temp <- merge(x = rem_covars_used, y = temp, by = "Sample_ID")
+  temp <- merge(x = rem_covars_used[, c("Sample_ID", "OD", "TSSR")], y = temp, by = "Sample_ID")
   rem_species_summary[[sp]] <- temp[, c("OD", "TSSR", "Time_Method")]
 }
 
