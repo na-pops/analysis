@@ -29,8 +29,12 @@ rem <- order_taxo(read.csv("../results/coefficients/removal.csv"))
 
 ####### Summary of Samples and Counts DFs #########
 
-summary_stats[["n_observations"]] <- nrow(project_counts)
+landbirds <- ibp[-which(ibp$LANDBIRD == "FALSE" |
+                                 ibp$SP == "+"), "SPEC"]
+summary_stats[["n_observations"]] <- nrow(project_counts[which(project_counts$Species %in% landbirds), ])
 summary_stats[["n_samples"]] <- nrow(project_samples)
+summary_stats[["n_rem_samples"]] <- nrow(rem_covars_used)
+summary_stats[["n_dis_samples"]] <- nrow(dis_covars_used)
 
 rem_covars <- rem_covars_used[, c("OD", "TSSR", "Time_Method")]
 dis_covars <- dis_covars_used[, c("ForestOnly_5x5", "roadside", "Distance_Method")]
