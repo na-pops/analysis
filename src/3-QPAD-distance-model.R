@@ -17,9 +17,8 @@ library(foreach)
 load(file = "data/combined/dist_count_matrix.rda")
 load(file = "data/combined/landcover_covariates.rda")
 load(file = "data/combined/dist_design.rda")
-na_sp_list <- read.csv("../utilities/IBP-Alpha-Codes20.csv")
 
-n_cores <- 4
+n_cores <- 15
 
 ####### Data Wrangling ############################
 
@@ -88,10 +87,7 @@ dis_covars_used <- dis_covars_used[!duplicated(dis_covars_used$Sample_ID), ]
 save(dis_covars_used, file = "data/combined/dis_covars_used.rda")
 
 # Build matrices by species
-species_all <- sort(as.character(unique(counts$Species)))
-landbirds <- na_sp_list[-which(na_sp_list$LANDBIRD == "FALSE" |
-                                 na_sp_list$SP == "+"), "SPEC"]
-species <- species_all[which(species_all %in% landbirds)]
+species <- sort(as.character(unique(counts$Species)))
 
 dis_species_summary <- vector(mode = "list", length = length(species))
 names(dis_species_summary) <- species

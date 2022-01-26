@@ -17,9 +17,8 @@ library(foreach)
 load(file = "data/combined/time_count_matrix.rda")
 load(file = "data/combined/temporal_covariates.rda")
 load(file = "data/combined/time_design.rda")
-na_sp_list <- read.csv("../utilities/IBP-Alpha-Codes20.csv")
 
-n_cores <- 4
+n_cores <- 15
 
 ####### Data Wrangling ############################
 
@@ -98,10 +97,7 @@ names(rem_covars_used)[ncol(rem_covars_used)] <- "Time_Method"
 save(rem_covars_used, file = "data/combined/rem_covars_used.rda")
 
 # Build matrices by species
-species_all <- sort(as.character(unique(counts$Species)))
-landbirds <- na_sp_list[-which(na_sp_list$LANDBIRD == "FALSE" |
-                                 na_sp_list$SP == "+"), "SPEC"]
-species <- species_all[which(species_all %in% landbirds)]
+species <- sort(as.character(unique(counts$Species)))
 
 rem_species_summary <- vector(mode = "list", length = length(species))
 names(rem_species_summary) <- species
