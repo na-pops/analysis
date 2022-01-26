@@ -15,6 +15,7 @@ source("../utilities/get-data.R")
 
 time <- read.csv("../covariates/survey/time_lookup.csv")
 dist <- read.csv("../covariates/survey/distance_lookup.csv")
+landbirds <- read.csv("../utilities/IBP-Alpha-Codes20.csv")
 
 # Get project names
 project_list <- read.table("../utilities/proj-list")
@@ -46,6 +47,17 @@ for (i in 1:n_proj)
 project_counts <- do.call(rbind, project_counts)
 project_counts$Abundance <- as.numeric(project_counts$Abundance)
 project_samples <- do.call(rbind, project_samples)
+
+# Last minute filtering before analysis
+# Change some species around
+project_counts[which(project_counts$Species == "MCLO"), "Species"] <- "TBLO"
+project_counts[which(project_counts$Species == "NOCR"), "Species"] <- "AMCR"
+
+# Filter down to only Canada, US, Mexico, Central America
+project_counts <- project_counts[which(project_counts$Species %in% landbirds$SPEC), ]
+
+# Use only project samples that have data
+project_samples <- project_samples[which(project_samples$Sample_ID %in% project_counts$Sample_ID), ]
 
 # Create combined landcover covariate df and temporal covariate df
 landcover_covariates <- vector('list', n_proj)
