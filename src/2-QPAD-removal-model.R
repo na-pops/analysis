@@ -103,13 +103,21 @@ landbirds <- na_sp_list[-which(na_sp_list$LANDBIRD == "FALSE" |
                                  na_sp_list$SP == "+"), "SPEC"]
 species <- species_all[which(species_all %in% landbirds)]
 
+rem_species_summary <- vector(mode = "list", length = length(species))
+names(rem_species_summary) <- species
+
 for (s in species)
 {
   if (nrow(counts[counts$Species == s, ]) >= 75)
   {
+    # Save covariates being used
+    covars_sp <- covars[which(covars$Species == s), ]
+    rem_species_summary[[s]] <- covars_sp[, c("OD", "TSSR", "Time_Method")]
+    
+    # Create matrices for modelling
     counts_sp <- counts[which(counts$Species == s), col_names]
     design_sp <- design[which(design$Species == s), col_names]
-    covars_sp <- covars[which(covars$Species == s), 14:15]
+    covars_sp <- covars_sp[, 14:15]
     
     covars_sp$OD <- (covars_sp$OD - median(covars_sp$OD)) / 365
     covars_sp$OD2 <- covars_sp$OD ^ 2
@@ -120,11 +128,16 @@ for (s in species)
     assign(paste0("Y_",s), as.matrix(counts_sp))
     assign(paste0("D_",s), as.matrix(design_sp))
     assign(paste0("C_",s), covars_sp)
+    
   }else
   {
     species <- species[!(species %in% s)]
   }
 }
+
+# Remove all empty species 
+rem_species_summary[sapply(rem_species_summary, is.null)] <- NULL
+save(rem_species_summary, file = "../results/quant-summary/rem_species_summary.rda")
 
 input_list <- vector(mode="list", length=length(species))
 names(input_list) <- species

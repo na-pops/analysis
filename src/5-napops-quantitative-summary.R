@@ -95,35 +95,6 @@ species_table <- data.frame(Code = codes,
 
 summary_stats[["n_species"]] <- nrow(species_table)
 
-####### Species-specific Summary (Distance) #######
-
-dis_species <- unique(dis$Species)
-dis_species_summary <- vector(mode = "list", length = length(dis_species))
-names(dis_species_summary) <- dis_species
-
-for (sp in dis_species)
-{
-  temp <- project_counts[which(project_counts$Species == sp), ]
-  temp <- temp[!duplicated(temp$Sample_ID), ]
-  temp <- merge(x = dis_covars_used[, c("Sample_ID", "ForestOnly_5x5", "roadside")], 
-                y = temp, by = "Sample_ID")
-  dis_species_summary[[sp]] <- temp[, c("ForestOnly_5x5", "roadside", "Distance_Method")]
-}
-
-####### Species-specific Summary (Removal) ########
-
-rem_species <- unique(rem$Species)
-rem_species_summary <- vector(mode = "list", length = length(rem_species))
-names(rem_species_summary) <- rem_species
-
-for (sp in rem_species)
-{
-  temp <- project_counts[which(project_counts$Species == sp), ]
-  temp <- temp[!duplicated(temp$Sample_ID), ]
-  temp <- merge(x = rem_covars_used[, c("Sample_ID", "OD", "TSSR")], y = temp, by = "Sample_ID")
-  rem_species_summary[[sp]] <- temp[, c("OD", "TSSR", "Time_Method")]
-}
-
 ####### Output Summary Statistics and Tables ######
 
 write.table(x = project_df, file = "../results/quant-summary/project_list.csv",
@@ -136,5 +107,3 @@ save(summary_stats, file = "../results/quant-summary/summary_statistics.rda")
 
 save(dis_covars, file = "../results/quant-summary/dis_covars.rda")
 save(rem_covars, file = "../results/quant-summary/rem_covars.rda")
-save(dis_species_summary, file = "../results/quant-summary/dis_species_summary.rda")
-save(rem_species_summary, file = "../results/quant-summary/rem_species_summary.rda")

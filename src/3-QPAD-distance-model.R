@@ -93,20 +93,34 @@ landbirds <- na_sp_list[-which(na_sp_list$LANDBIRD == "FALSE" |
                                  na_sp_list$SP == "+"), "SPEC"]
 species <- species_all[which(species_all %in% landbirds)]
 
+dis_species_summary <- vector(mode = "list", length = length(species))
+names(dis_species_summary) <- species
+
 for (s in species)
 {
   if (nrow(counts[counts$Species == s, ]) >= 75)
   {
-    assign(paste0("Y_",s), as.matrix(counts[counts$Species==s, col_names]))
-    assign(paste0("D_",s), as.matrix(design[design$Species==s, col_names]))
-    assign(paste0("C_",s), subset(covars,
-                                  Species==s,
-                                  select = c(18:19)))
+    # Save covariates being used
+    covars_sp <- covars[which(covars$Species == s), ]
+    dis_species_summary[[s]] <- covars_sp[, c("ForestOnly_5x5", "roadside", "Distance_Method")]
+    
+    # Create matrices for modelling
+    counts_sp <- counts[which(counts$Species == s), col_names]
+    design_sp <- design[which(design$Species == s), col_names]
+    covars_sp <- covars_sp[, 18:19]
+    
+    assign(paste0("Y_",s), as.matrix(counts_sp))
+    assign(paste0("D_",s), as.matrix(design_sp))
+    assign(paste0("C_",s), covars_sp)
   }else
   {
     species <- species[!(species %in% s)]
   }
 }
+
+# Remove all empty species 
+dis_species_summary[sapply(dis_species_summary, is.null)] <- NULL
+save(dis_species_summary, file = "../results/quant-summary/dis_species_summary.rda")
 
 input_list <- vector(mode="list", length=length(species))
 names(input_list) <- species
