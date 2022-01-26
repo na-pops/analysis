@@ -24,6 +24,7 @@ load(file = "data/combined/rem_covars_used.rda")
 
 project_list <- read.table("../utilities/proj-list")[,1]
 ibp <- read.csv("../utilities/IBP-Alpha-Codes20.csv")
+nacc <- read.csv("../utilities/NACC_list_species.csv")
 dis <- order_taxo(read.csv("../results/coefficients/distance.csv"))
 rem <- order_taxo(read.csv("../results/coefficients/removal.csv"))
 
@@ -79,6 +80,8 @@ common_name <- ibp[which(ibp$SPEC %in% codes), "COMMONNAME"]
 
 sci_name <- ibp[which(ibp$SPEC %in% codes), "SCINAME"]
 
+families <- nacc[which(nacc$common_name %in% common_name), "family"]
+
 in_removal <- ifelse(codes %in% rem$Species, 1, 0)
 
 in_distance <- ifelse(codes %in% dis$Species, 1, 0)
@@ -86,6 +89,7 @@ in_distance <- ifelse(codes %in% dis$Species, 1, 0)
 species_table <- data.frame(Code = codes,
                             Common_Name = common_name,
                             Scientific_Name = sci_name,
+                            Family = families,
                             removal = in_removal,
                             distance = in_distance)
 
