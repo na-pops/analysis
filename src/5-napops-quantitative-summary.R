@@ -32,7 +32,7 @@ rem <- order_taxo(read.csv("../results/coefficients/removal.csv"))
 
 landbirds <- ibp[-which(ibp$LANDBIRD == "FALSE" |
                                  ibp$SP == "+"), "SPEC"]
-summary_stats[["n_observations"]] <- nrow(project_counts[which(project_counts$Species %in% landbirds), ])
+summary_stats[["n_observations"]] <- nrow(project_counts)
 summary_stats[["n_samples"]] <- nrow(project_samples)
 summary_stats[["n_rem_samples"]] <- nrow(rem_covars_used)
 summary_stats[["n_dis_samples"]] <- nrow(dis_covars_used)
