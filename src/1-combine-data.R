@@ -24,7 +24,7 @@ n_proj <- nrow(project_list)
 # Create combined count data frame
 project_counts <- vector('list', n_proj)
 project_samples <- vector('list', n_proj)
-message("1/7 Now reading and combining project counts and samples.\n")
+message("1/6 Now reading and combining project counts and samples.\n")
 for (i in 1:n_proj)
 {
   p <- project_list$V1[i]
@@ -62,7 +62,7 @@ project_samples <- project_samples[which(project_samples$Sample_ID %in% project_
 # Create combined landcover covariate df and temporal covariate df
 landcover_covariates <- vector('list', n_proj)
 temporal_covariates <- vector('list', n_proj)
-message("2/7 Now reading and combining covariates.\n")
+message("2/6 Now reading and combining covariates.\n")
 for (i in 1:n_proj)
 {
   p <- project_list$V1[i]
@@ -85,15 +85,14 @@ temporal_covariates <- do.call(rbind, temporal_covariates)
 ####### Wrangle Data ##############################
 
 # Create joint time and distance matrix
-message("3/7 Now creating joint time and distance count matrix with dcast().\n")
-#' For testing purposes, just use the first 1000 counts. Also, since
-#' none of these counts meet any of the criteria below, I can comment out
-#' those 4 lines which will be needed later with full dataset
-joint_matrix <- project_counts[c(1:1000), ]
-#joint_matrix <- joint_matrix[-which(joint_matrix$Time_Method == "ZZ"), ]
-#joint_matrix <- joint_matrix[-which(is.na(joint_matrix$Time_Level)), ]
-#joint_matrix <- joint_matrix[-which(joint_matrix$Distance_Method == "ZZ"), ]
-#joint_matrix <- joint_matrix[-which(is.na(joint_matrix$Distance_Level)), ]
+message("3/6 Now creating joint time and distance count matrix with dcast().\n")
+joint_matrix <- project_counts
+joint_matrix <- joint_matrix[-which(joint_matrix$Time_Method == "ZZ"), ]
+joint_matrix <- joint_matrix[-which(is.na(joint_matrix$Time_Level)), ]
+joint_matrix <- joint_matrix[-which(joint_matrix$Time_Level == "99"), ]
+joint_matrix <- joint_matrix[-which(joint_matrix$Distance_Method == "ZZ"), ]
+joint_matrix <- joint_matrix[-which(is.na(joint_matrix$Distance_Level)), ]
+
 joint_count_matrix <- dcast(joint_matrix,
                             Sample_ID + Species + Time_Method + Distance_Method +
                               Distance_Level ~ as.numeric(Time_Level),
@@ -108,49 +107,24 @@ for (s in 1:(nrow(joint_count_matrix)))
     as.numeric(unname(joint_count_matrix[s, c(6:ncol(joint_count_matrix))]))
 }
 
-# Create time count matrix
-message("3/7 Now creating time_count_matrix with dcast().\n")
-time_only <- project_counts[, c(1:3, 7,8 )]
-time_only <- time_only[-which(time_only$Time_Method == "ZZ"), ]
-time_only <- time_only[-which(is.na(time_only$Time_Level)), ]
-time_count_matrix <- dcast(time_only,
-                           Sample_ID + Species + Time_Method ~ as.numeric(Time_Level),
-                           value.var = "Abundance",
-                           fun.aggregate = sum)
-
-# Create distance count matrix
-message("4/7 Now creating dist_count_matrix with dcast().\n")
-
-#' The following chunk of code is for testing purposes for now
-project_counts[which(project_counts$Distance_Method == "E"), "Distance_Method"] <- "Q"
-project_counts[which(project_counts$Distance_Method == "M"), "Distance_Method"] <- "R"
-project_samples[which(project_samples$Distance_Method == "E"), "Distance_Method"] <- "Q"
-project_samples[which(project_samples$Distance_Method == "M"), "Distance_Method"] <- "R"
-
-dist_only <- project_counts[, c(1:5)]
-dist_only <- dist_only[-which(dist_only$Distance_Method == "ZZ"), ]
-dist_only <- dist_only[-which(is.na(dist_only$Distance_Level)), ]
-dist_count_matrix <- dcast(dist_only,
-                           Sample_ID + Species + Distance_Method ~ as.numeric(Distance_Level),
-                           value.var = "Abundance",
-                           fun.aggregate = sum)
+joint_count_metadata <- joint_count_matrix[, c("Sample_ID", "Species", "Time_Method",
+                                               "Distance_Method")]
 
 # Create time removal design matrix
-message("5/7 Now creating time_design with dcast().\n")
+message("4/6 Now creating time_design with dcast().\n")
 time <- time[-c(1), ]
 time_design <- dcast(time, Method + Max_Duration ~ Level, value.var = "End_Duration")
 
 # Create distance design matrix
-message("6/7 Now creating dist_design with dcast().\n")
+message("5/6 Now creating dist_design with dcast().\n")
 dist <- dist[-c(1), ]
 dist_design <- dcast(dist, Method + Max_Distance ~ Level, value.var = "End_Distance")
 
 ####### Output Data ###############################
-message("7/7 Now saving all data.\n")
+message("6/6 Now saving all data.\n")
 save(project_counts, file = "data/combined/counts.rda")
 save(project_samples, file = "data/combined/samples.rda")
-save(time_count_matrix, file = "data/combined/time_count_matrix.rda")
-save(dist_count_matrix, file = "data/combined/dist_count_matrix.rda")
+save(joint_count_array, file = "data/combined/joint_count_array.rda")
 save(landcover_covariates, file = "data/combined/landcover_covariates.rda")
 save(temporal_covariates, file = "data/combined/temporal_covariates.rda")
 save(time_design, file = "data/combined/time_design.rda")
