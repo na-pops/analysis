@@ -3,7 +3,7 @@
 # NA-POPS: analysis
 # 1-combine-data.R
 # Created August 2020
-# Last Updated January 2022
+# Last Updated February 2023
 
 ####### Import Libraries and External Files #######
 
@@ -83,6 +83,30 @@ landcover_covariates <- do.call(rbind, landcover_covariates)
 temporal_covariates <- do.call(rbind, temporal_covariates)
 
 ####### Wrangle Data ##############################
+
+# Create joint time and distance matrix
+message("3/7 Now creating joint time and distance count matrix with dcast().\n")
+#' For testing purposes, just use the first 1000 counts. Also, since
+#' none of these counts meet any of the criteria below, I can comment out
+#' those 4 lines which will be needed later with full dataset
+joint_matrix <- project_counts[c(1:1000), ]
+#joint_matrix <- joint_matrix[-which(joint_matrix$Time_Method == "ZZ"), ]
+#joint_matrix <- joint_matrix[-which(is.na(joint_matrix$Time_Level)), ]
+#joint_matrix <- joint_matrix[-which(joint_matrix$Distance_Method == "ZZ"), ]
+#joint_matrix <- joint_matrix[-which(is.na(joint_matrix$Distance_Level)), ]
+joint_count_matrix <- dcast(joint_matrix,
+                            Sample_ID + Species + Time_Method + Distance_Method +
+                              Distance_Level ~ as.numeric(Time_Level),
+                            value.var = "Abundance",
+                            fun.aggregate = sum)
+joint_count_array <- array(data = 0, dim = c(nrow(joint_count_matrix),
+                                             ncol(joint_count_matrix) - 5,
+                                             max(as.numeric(joint_count_matrix$Distance_Level))))
+for (s in 1:(nrow(joint_count_matrix)))
+{
+  joint_count_array[s, , as.numeric(joint_count_matrix[s,]$Distance_Level)] <-
+    as.numeric(unname(joint_count_matrix[s, c(6:ncol(joint_count_matrix))]))
+}
 
 # Create time count matrix
 message("3/7 Now creating time_count_matrix with dcast().\n")
