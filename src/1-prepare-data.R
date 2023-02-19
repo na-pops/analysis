@@ -1,7 +1,7 @@
 ####### Script Information ########################
 # Brandon P.M. Edwards
 # NA-POPS: analysis
-# 1-combine-data.R
+# 1-prepare-data.R
 # Created August 2020
 # Last Updated February 2023
 
