@@ -12,28 +12,27 @@ library(plyr)
 library(doParallel)
 library(foreach)
 
+source("src/functions/joint_fns.R")
+
 ####### Read Data #################################
 
 load(file = "data/combined/joint_count_array.rda")
 load(file = "data/combined/joint_count_metadata.rda")
 load(file = "data/combined/temporal_covariates.rda")
-load(file = "data/combined/time_design.rda")
+load(file = "data/combined/time_count_design.rda")
 load(file = "data/combined/landcover_covariates.rda")
-load(file = "data/combined/dist_design.rda")
+load(file = "data/combined/dist_count_design.rda")
 
 ####### Set Constants #############################
 
 n_cores <- 15
 # For testing purposes
-species <- c("AMRO", "WTSP", "OVEN", "BLPW", "REVI")
+species <- c("SAVS", "AMRO", "VESP", "CCSP")
 
 ####### Data Wrangling ############################
 
-# Add indexing variable
-joint_count_metadata$Index <- seq(1,nrow(joint_count_metadata))
-
 # Drop method I
-dist_design <- dist_design[-which(dist_design$Method == "I"), ]
+dist_count_design <- dist_count_design[-which(dist_count_design$Method == "I"), ]
 joint_count_metadata <- joint_count_metadata[-which(joint_count_metadata$Distance_Method == "I"), ]
 
 # Filter to only species that will be modelled
@@ -41,12 +40,19 @@ joint_count_metadata <- joint_count_metadata[-which(joint_count_metadata$Distanc
 # we will just set a small selection of species for testing
 joint_count_metadata <- joint_count_metadata[which(joint_count_metadata$Species %in% species), ]
 
-# Create time design matrix
-names(time_design)[1] <- "Time_Method"
-count_time_design <- plyr::join(joint_count_metadata[,c("Index", "Time_Method")], time_design,
-                                by = "Time_Method", type = "left")
-
-names(dist_design)[1] <- "Distance_Method"
-count_dist_design <- plyr::join(joint_count_metadata[,c("Index", "Distance_Method")], dist_design,
-                                by = "Distance_Method", type = "left")
+for (s in species)
+{
+  indices <- joint_count_metadata[which(joint_count_metadata$Species == s),
+                                  "Index"]
+  
+  counts <- joint_count_array[indices,,]
+  dist_matrix <- as.matrix(dist_count_design[indices, c(4:ncol(dist_count_design))])/100
+  time_matrix <- as.matrix(time_count_design[indices, c(4:ncol(time_count_design))])
+  
+  fit <- cmulti.fit.joint(counts,
+                          dist_matrix,
+                          time_matrix)
+  
+  fit$coefficients
+}
 
