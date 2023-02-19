@@ -86,7 +86,7 @@ temporal_covariates <- do.call(rbind, temporal_covariates)
 
 # Create joint time and distance matrix
 message("3/5 Now creating joint distance and time count matrix with dcast().\n")
-joint_matrix <- project_counts[c(1:3000), ]
+joint_matrix <- project_counts
 joint_matrix <- joint_matrix[-which(joint_matrix$Time_Method == "ZZ"), ]
 joint_matrix <- joint_matrix[-which(is.na(joint_matrix$Time_Level)), ]
 joint_matrix <- joint_matrix[-which(joint_matrix$Time_Level == "99"), ]
