@@ -11,7 +11,10 @@ library(detect)
 library(plyr)
 library(doParallel)
 library(foreach)
+library(Rcpp)
 
+Rcpp::sourceCpp("src/functions/nll_fun.cpp")
+source("cmulti_fit_joint_cpp.R")
 source("src/functions/joint_fns.R")
 
 ####### Read Data #################################
