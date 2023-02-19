@@ -11,10 +11,10 @@ library(detect)
 library(plyr)
 library(doParallel)
 library(foreach)
-library(Rcpp)
+#library(Rcpp)
 
-Rcpp::sourceCpp("src/functions/nll_fun.cpp")
-source("cmulti_fit_joint_cpp.R")
+#Rcpp::sourceCpp("src/functions/nll_fun.cpp")
+#source("cmulti_fit_joint_cpp.R")
 source("src/functions/joint_fns.R")
 
 ####### Read Data #################################
@@ -30,7 +30,7 @@ load(file = "data/combined/dist_count_design.rda")
 
 n_cores <- 15
 # For testing purposes
-species <- c("SAVS", "AMRO", "VESP", "CCSP")
+species <- c("SAVS", "AMRO", "VESP", "CCSP", "BLPW", "OVEN", "WTSP")
 
 ####### Data Wrangling ############################
 
@@ -45,6 +45,7 @@ joint_count_metadata <- joint_count_metadata[which(joint_count_metadata$Species 
 
 for (s in species)
 {
+  print(s)
   indices <- joint_count_metadata[which(joint_count_metadata$Species == s),
                                   "Index"]
   
@@ -56,6 +57,6 @@ for (s in species)
                           dist_matrix,
                           time_matrix)
   
-  fit$coefficients
+  save(fit, file = paste0("data/joint/", s, ".rda"))  
 }
 
