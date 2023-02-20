@@ -35,7 +35,6 @@ species <- c("SAVS", "AMRO", "VESP", "CCSP", "BLPW", "OVEN", "WTSP")
 ####### Data Wrangling ############################
 
 # Drop method I
-dist_count_design <- dist_count_design[-which(dist_count_design$Method == "I"), ]
 joint_count_metadata <- joint_count_metadata[-which(joint_count_metadata$Distance_Method == "I"), ]
 
 # Filter to only species that will be modelled
